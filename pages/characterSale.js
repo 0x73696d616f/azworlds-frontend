@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import abi from "../contracts/CharacterSale.json";
+import usdcAbi from "../contracts/USDC.json";
 import { ethers } from "ethers";
 
 
@@ -12,7 +13,15 @@ const CharacterSale = () => {
   const buyCharacter = async () => {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
-    const characterSale = new ethers.Contract("0xf6cCCce87Be6a0cA28867Ab7fE4EF5D3D5d3AABB", abi, provider);
+    const characterSaleAddress = "0x5cfC45e613278C509C653D8d4D5b908798efEf8F";
+    const characterSale = new ethers.Contract(characterSaleAddress, abi, signer);
+    const usdcAddress = await characterSale.usdc();
+    const usdc = new ethers.Contract(usdcAddress, usdcAbi, signer);
+    const usdcName = await usdc.name();
+    const chainId = await signer.getChainId();
+    const validBefore = Math.floor(Date.now() / 1000) + 3600; // Valid for an hour
+    const nonce = ethers.BigNumber.from(ethers.utils.randomBytes(32)).toHexString();
+    const value = await characterSale.getPrice();
     const data = {
         types: {
           EIP712Domain: [
@@ -21,7 +30,7 @@ const CharacterSale = () => {
             { name: "chainId", type: "uint256" },
             { name: "verifyingContract", type: "address" },
           ],
-          TransferWithAuthorization: [
+          ReceiveWithAuthorization: [
             { name: "from", type: "address" },
             { name: "to", type: "address" },
             { name: "value", type: "uint256" },
@@ -31,51 +40,36 @@ const CharacterSale = () => {
           ],
         },
         domain: {
-          name: tokenName,
-          version: tokenVersion,
-          chainId: selectedChainId,
-          verifyingContract: tokenAddress,
+          name: "MockERC20",
+          version: "1",
+          chainId: chainId,
+          verifyingContract: usdcAddress,
         },
-        primaryType: "TransferWithAuthorization",
+        primaryType: "ReceiveWithAuthorization",
         message: {
-          from: userAddress,
-          to: recipientAddress,
-          value: amountBN.toString(10),
+          from: client.address,
+          to: characterSaleAddress,
+          value: value.toString(),
           validAfter: 0,
-          validBefore: Math.floor(Date.now() / 1000) + 3600, // Valid for an hour
-          nonce: Web3.utils.randomHex(32),
+          validBefore: validBefore, // Valid for an hour
+          nonce: nonce,
         },
       };
       
-      const signature = await ethereum.request({
-        method: "eth_signTypedData_v4",
-        params: [userAddress, JSON.stringify(data)],
-      });
+    const signature = await window.ethereum.request({
+      method: "eth_signTypedData_v4",
+      params: [client.address, JSON.stringify(data)],
+    });
       
-      const v = "0x" + signature.slice(130, 132);
-      const r = signature.slice(0, 66);
-      const s = "0x" + signature.slice(66, 130);
+    const v = "0x" + signature.slice(130, 132);
+    const r = signature.slice(0, 66);
+    const s = "0x" + signature.slice(66, 130);
 
-
-    const estimatedGasLimit = await characterSale.estimateGas.buy(client.address, 10**18); // approves 1 USDT
-    const approveTxUnsigned = await characterSale.populateTransaction.approve("SOME_ADDRESS", ethers.utils.parseUnits("10.0", 18), "0", ethers.utils.parseUnits("10.0", 18), 0);
-    approveTxUnsigned.chainId = 11155111; // chainId 1 for Ethereum mainnet
-    approveTxUnsigned.gasLimit = estimatedGasLimit;
-    approveTxUnsigned.gasPrice = await provider.getGasPrice();
-    approveTxUnsigned.nonce = await provider.getTransactionCount(walletAddress);
-
-    const approveTxSigned = await signer.signTransaction(approveTxUnsigned);
-    const submittedTx = await provider.sendTransaction(approveTxSigned);
-    const approveReceipt = await submittedTx.wait();
-    if (approveReceipt.status === 0)
-        throw new Error("Approve transaction failed");
-
+    const sig = {"v" : v, "r" : r, "s" : s};
     try {
-      signer.signMessage("Hello World").then((result) => {
-        console.log(result);
-      });
+    const tx = await characterSale.buy(client.address, value, 0, validBefore, nonce, sig);
+    await tx.wait();
     } catch (error) {
-      // handle error
       console.log(error);
     }
   };
@@ -162,7 +156,7 @@ const CharacterSale = () => {
 
       <section className="container d-flex">
         <main>
-          <h1 className="main-title">Character Sale🚀</h1>
+          <h1 className="main-title">Character Auction🚀</h1>
 
           {/* ---- */}
           <p>
