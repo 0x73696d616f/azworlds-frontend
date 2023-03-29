@@ -186,6 +186,163 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_fromTokenId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_toTokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "BatchMetadataUpdate",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "buyer",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "charId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "price",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "tokenURI",
+        "type": "string"
+      }
+    ],
+    "name": "CharacterBought",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "charId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint32",
+        "name": "level",
+        "type": "uint32"
+      }
+    ],
+    "name": "CharacterLevelUp",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint32",
+            "name": "charId",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint32",
+            "name": "level",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint32",
+            "name": "power",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint160",
+            "name": "equippedGold",
+            "type": "uint160"
+          }
+        ],
+        "indexed": true,
+        "internalType": "struct ICharacter.CharInfo",
+        "name": "charInfo",
+        "type": "tuple"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "fromAddress",
+        "type": "address"
+      }
+    ],
+    "name": "CharacterReceived",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint32",
+            "name": "charId",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint32",
+            "name": "level",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint32",
+            "name": "power",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint160",
+            "name": "equippedGold",
+            "type": "uint160"
+          }
+        ],
+        "indexed": true,
+        "internalType": "struct ICharacter.CharInfo",
+        "name": "charInfo",
+        "type": "tuple"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint16",
+        "name": "dstChainId",
+        "type": "uint16"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "toAddress",
+        "type": "address"
+      }
+    ],
+    "name": "CharacterSent",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": true,
         "internalType": "address",
         "name": "delegator",
@@ -236,6 +393,76 @@
     "anonymous": false,
     "inputs": [],
     "name": "EIP712DomainChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "charId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "goldAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "GoldCarried",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "charId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "goldAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "GoldDropped",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "charId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "itemIds",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "ItemsEquipped",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "MetadataUpdate",
     "type": "event"
   },
   {
@@ -453,6 +680,11 @@
         "internalType": "struct ICharacterSale.Signature",
         "name": "signature_",
         "type": "tuple"
+      },
+      {
+        "internalType": "string",
+        "name": "tokenURI_",
+        "type": "string"
       }
     ],
     "name": "buy",

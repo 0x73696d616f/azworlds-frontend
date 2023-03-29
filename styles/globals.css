@@ -94,6 +94,20 @@ a {
   border: 1px solid #FFFFFF;
 }
 
+.input::placeholder {
+  color: black;
+  letter-spacing: 2px;
+}
+
+.inputBox {
+  margin-top: 4%;
+  font-size: larger;
+  padding-left: 100px;
+  color: black;
+}
+
+
+
 /* media query for mobile devices */
 @media only screen and (max-width: 600px) {
   .fren-nav {

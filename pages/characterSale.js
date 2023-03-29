@@ -3,17 +3,38 @@ import abi from "../contracts/CharacterSale.json";
 import usdcAbi from "../contracts/USDC.json";
 import { ethers } from "ethers";
 
-
 import Link from "next/link";
 import Metamask from "../component/metamask";
 
 const CharacterSale = () => {
   const [haveMetamask, sethaveMetamask] = useState(true);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [img, setImg] = useState([]);
+
+  const upload = async () => {
+    let formData = new FormData();
+    formData.append('name', name);
+    formData.append('description', description);
+    formData.append('image', img);
+    const response = await fetch("/api/store-metadata", {
+      method: "POST",
+      body: formData,
+      headers: {
+        Accept: 'application/json',
+        },
+    });
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response.json();
+  } 
 
   const buyCharacter = async () => {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
-    const characterSaleAddress = "0x5cfC45e613278C509C653D8d4D5b908798efEf8F";
+    const characterSaleAddress = "0x7A826212b8AB639bfC02ae3af4d4Eb8EbE1cDc5B";
     const characterSale = new ethers.Contract(characterSaleAddress, abi, signer);
     const usdcAddress = await characterSale.usdc();
     const usdc = new ethers.Contract(usdcAddress, usdcAbi, signer);
@@ -23,57 +44,57 @@ const CharacterSale = () => {
     const nonce = ethers.BigNumber.from(ethers.utils.randomBytes(32)).toHexString();
     const value = await characterSale.getPrice();
     const data = {
-        types: {
-          EIP712Domain: [
-            { name: "name", type: "string" },
-            { name: "version", type: "string" },
-            { name: "chainId", type: "uint256" },
-            { name: "verifyingContract", type: "address" },
-          ],
-          ReceiveWithAuthorization: [
-            { name: "from", type: "address" },
-            { name: "to", type: "address" },
-            { name: "value", type: "uint256" },
-            { name: "validAfter", type: "uint256" },
-            { name: "validBefore", type: "uint256" },
-            { name: "nonce", type: "bytes32" },
-          ],
-        },
-        domain: {
-          name: "MockERC20",
-          version: "1",
-          chainId: chainId,
-          verifyingContract: usdcAddress,
-        },
-        primaryType: "ReceiveWithAuthorization",
-        message: {
-          from: client.address,
-          to: characterSaleAddress,
-          value: value.toString(),
-          validAfter: 0,
-          validBefore: validBefore, // Valid for an hour
-          nonce: nonce,
-        },
-      };
-      
+      types: {
+        EIP712Domain: [
+          { name: "name", type: "string" },
+          { name: "version", type: "string" },
+          { name: "chainId", type: "uint256" },
+          { name: "verifyingContract", type: "address" },
+        ],
+        ReceiveWithAuthorization: [
+          { name: "from", type: "address" },
+          { name: "to", type: "address" },
+          { name: "value", type: "uint256" },
+          { name: "validAfter", type: "uint256" },
+          { name: "validBefore", type: "uint256" },
+          { name: "nonce", type: "bytes32" },
+        ],
+      },
+      domain: {
+        name: usdcName,
+        version: "1",
+        chainId: chainId,
+        verifyingContract: usdcAddress,
+      },
+      primaryType: "ReceiveWithAuthorization",
+      message: {
+        from: client.address,
+        to: characterSaleAddress,
+        value: value.toString(),
+        validAfter: 0,
+        validBefore: validBefore, // Valid for an hour
+        nonce: nonce,
+      },
+    };
+
     const signature = await window.ethereum.request({
       method: "eth_signTypedData_v4",
       params: [client.address, JSON.stringify(data)],
     });
-      
+
     const v = "0x" + signature.slice(130, 132);
     const r = signature.slice(0, 66);
     const s = "0x" + signature.slice(66, 130);
 
-    const sig = {"v" : v, "r" : r, "s" : s};
+    const sig = { "v": v, "r": r, "s": s };
     try {
-    const tx = await characterSale.buy(client.address, value, 0, validBefore, nonce, sig);
-    await tx.wait();
+      const res = await upload();
+      const tx = await characterSale.buy(client.address, value, 0, validBefore, nonce, sig, res.url);
+      await tx.wait();
     } catch (error) {
       console.log(error);
     }
   };
-  
 
   const [client, setclient] = useState({
     isConnected: false,
@@ -182,6 +203,35 @@ const CharacterSale = () => {
                 </button>
               </>
             )}
+            <div>
+              <div>
+                <input
+                  className="input1"
+                  type="text"
+                  value={name}
+                  placeholder="Name of the NFT"
+                  onChange={(e) => setName(e.target.value)}
+                ></input>
+              </div>
+              <div >
+                <input
+                  className="input2"
+                  type="text"
+                  value={description}
+                  placeholder="Description for the NFT"
+                  onChange={(e) => setDescription(e.target.value)}
+                ></input>
+              </div>
+              <div>
+                <label className="styles.inputLabel">
+                  <input
+                    className="inputBox"
+                    type="file"
+                    onChange={(e) => setImg(e.target.files[0])}
+                  ></input>
+                </label>
+              </div>
+            </div>
           </p>
           {/* ---- */}
         </main>
