@@ -14,6 +14,7 @@ export default async function handler(req, res) {
   const form = new formidable.IncomingForm();
   form.uploadDir = "./";
   form.keepExtensions = true;
+  form.uploadDir = "/tmp";
   form.parse(req, async(err, fields, files) => {
     if (err)
       return res.send({status: "500", error: err});
