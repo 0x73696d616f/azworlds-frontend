@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid, Card, Text, Container } from "@nextui-org/react";
+import { Grid, Card, Text } from "@nextui-org/react";
 
 const CharacterList = ({ characters }) => {
   if (!characters) return (<div>Loading...</div>);
