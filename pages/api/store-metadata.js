@@ -12,9 +12,8 @@ export const config = {
 export default async function handler(req, res) {
   const nftstorage_key = process.env.NFT_STORAGE_API_KEY;
   const form = new formidable.IncomingForm();
-  form.uploadDir = "./";
   form.keepExtensions = true;
-  form.uploadDir = "/tmp";
+  form.uploadDir = "./";
   form.parse(req, async(err, fields, files) => {
     if (err)
       return res.send({status: "500", error: err});

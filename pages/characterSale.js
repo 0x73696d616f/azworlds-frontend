@@ -42,7 +42,8 @@ const CharacterSale = () => {
     const chainId = await signer.getChainId();
     const validBefore = Math.floor(Date.now() / 1000) + 3600; // Valid for an hour
     const nonce = ethers.BigNumber.from(ethers.utils.randomBytes(32)).toHexString();
-    const value = await characterSale.getPrice();
+    let value = await characterSale.getPrice();
+    value = value + 10000;
     const data = {
       types: {
         EIP712Domain: [
