@@ -19,7 +19,6 @@ const Boss = () => {
   const [selectedRoundSeed, setSelectedRoundSeed] = useState(0);
 
   const display = function(seconds) {
-    seconds = seconds * -1;
     return new Date(seconds * 1000).toISOString().slice(11, 19);
   }
 
