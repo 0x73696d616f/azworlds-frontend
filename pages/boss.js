@@ -26,12 +26,14 @@ const Boss = () => {
       if (typeof window.ethereum === "undefined") return;
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
-      const bossAddress = "0xE09de7251f9A0Ef8ecD06b4141150185B1b97649";
+      const bossAddress = "0x884Fc9CFab2A0BBE0aD647B75249609B72Ad20B9";
       const boss = new ethers.Contract(bossAddress, abi, signer);
       const lastRoundTimestamp = await boss.lastRoundTimestamp();
       const currentRoundId = await boss.roundId();
       const roundDuration = await boss.ROUND_DURATION();
+      const roundSeedCurr = await boss.roundSeed(currentRoundId.toNumber());
 
+      setSelectedRoundSeed(roundSeedCurr.toNumber());
       setRoundDuration(roundDuration.toNumber());
       setLastRound(lastRoundTimestamp.toNumber());
       setRoundId(currentRoundId.toNumber());
@@ -43,8 +45,6 @@ const Boss = () => {
         setSelectedRoundSeed("");
         return boss;
       }
-
-      console.log("how");
 
       const currAttacked = await boss.charInfo(currentRoundId.toNumber(), charId);
       setAttacked(currAttacked);

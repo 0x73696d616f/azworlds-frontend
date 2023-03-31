@@ -1,9 +1,11 @@
 import Layout from "../component/layout";
 import { useState, useEffect } from "react";
 import CharacterList from "../component/card-list";
+import styles from "../component/characters.module.css";
 
 const Characters = () => {
   const [characters, setCharacters] = useState([]);
+  const [charId, setCharId] = useState({});
   useEffect(() => {
     fetch('/api/characters-storage')
       .then((res) => res.json())
@@ -20,8 +22,10 @@ const Characters = () => {
 
   return (
     <>
-      <Layout />
+      <div className={styles.bgWrap}>
+      <Layout setCharId={setCharId}/>
       <CharacterList characters={characters} />
+      </div>
     </>
   );
 };

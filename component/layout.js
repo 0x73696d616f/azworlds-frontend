@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Input, Spacer } from "@nextui-org/react";
-import Link from "next/link";
+import { Button, Dropdown, Input, Link } from "@nextui-org/react";
+import NextLink from "next/link";
 
 export const Layout = (props) => {
   const [haveMetamask, sethaveMetamask] = useState(true);
@@ -68,14 +68,28 @@ export const Layout = (props) => {
       {/* Navbar */}
       <nav className="fren-nav d-flex">
         <div>
-          <h3>MENU_</h3>
+        {domLoaded && < Dropdown>
+            <Dropdown.Button color="warning" auto>Menu</Dropdown.Button>
+            <Dropdown.Menu color="warning" aria-label="Static Actions">
+              <Dropdown.Item key="home"><NextLink href="/">Home</NextLink></Dropdown.Item>
+              <Dropdown.Item key="characters"><NextLink href="/characters">Characters</NextLink></Dropdown.Item>
+              <Dropdown.Item key="auction"><NextLink href="/characterSale">Character Auction</NextLink></Dropdown.Item>
+              <Dropdown.Item key="boss"><NextLink href="/boss">Fight Boss</NextLink></Dropdown.Item>
+              <Dropdown.Item key="marketplace"><NextLink href="/marketplace">Marketplace</NextLink></Dropdown.Item>
+              <Dropdown.Item key="military"><NextLink href="/military">Military</NextLink></Dropdown.Item>
+              <Dropdown.Item key="upVsDownGame"><NextLink href="/upVsDownGame">UpVsDownGame</NextLink></Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>}
         </div>
-        <div className="d-flex" style={{ marginLeft: "auto" }}>
-          <div style={{ marginRight: "20px" }}>
-        {domLoaded && <Input placeholder="Select Char Id" onChange={setCharHereAndParent}/>}
-        </div>
+        <div style={{ marginLeft: "1vw" }}>
+            {domLoaded && <Input placeholder="Select Char Id" auto onChange={setCharHereAndParent} />}
+          </div>
+        <div className="d-flex" auto style={{ marginLeft: "auto" }}>
           <div>
-            <button className="btn connect-btn" onClick={connectWeb3}>
+            <Button color="warning" auto style={{marginRight:"1vw"}}> Documentation </Button>
+          </div>
+          <div>
+            <Button color="warning" auto onClick={connectWeb3}>
               {client.isConnected ? (
                 <>
                   {client.address.slice(0, 4)}...
@@ -84,11 +98,11 @@ export const Layout = (props) => {
               ) : (
                 <>Connect Wallet</>
               )}
-            </button>
+            </Button>
           </div>
           <div>
-            <Link href="https://twitter.com/3xJanx2009">
-              <button className="btn tw-btn">TW</button>
+            <Link color="warning" href="https://twitter.com/3xJanx2009">
+              <Button color="warning" auto style={{marginLeft:"1vw"}}>TW</Button>
             </Link>
           </div>
         </div>

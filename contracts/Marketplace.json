@@ -1,0 +1,341 @@
+[
+    {
+        "inputs": [
+            {
+                "internalType": "contract IItem",
+                "name": "item_",
+                "type": "address"
+            },
+            {
+                "internalType": "contract IGold",
+                "name": "gold_",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "buyOrderId_",
+                "type": "uint256"
+            }
+        ],
+        "name": "BuyOrderDoesNotExistError",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "NoOrdersError",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "buyOrderId_",
+                "type": "uint256"
+            }
+        ],
+        "name": "NotBuyerError",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "sellOrderId_",
+                "type": "uint256"
+            }
+        ],
+        "name": "NotSellerError",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "sellOrderId_",
+                "type": "uint256"
+            }
+        ],
+        "name": "SellOrderDoesNotExistError",
+        "type": "error"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "buyer",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint16",
+                "name": "itemId",
+                "type": "uint16"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint80",
+                "name": "price",
+                "type": "uint80"
+            }
+        ],
+        "name": "BuyOrderCancelled",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "buyer",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint16",
+                "name": "itemId",
+                "type": "uint16"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint80",
+                "name": "price",
+                "type": "uint80"
+            }
+        ],
+        "name": "BuyOrderFulfilled",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "buyer",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint16",
+                "name": "itemId",
+                "type": "uint16"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint80",
+                "name": "price",
+                "type": "uint80"
+            }
+        ],
+        "name": "BuyOrderPlaced",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "seller",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint16",
+                "name": "itemId",
+                "type": "uint16"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint80",
+                "name": "price",
+                "type": "uint80"
+            }
+        ],
+        "name": "SellOrderCancelled",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "seller",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint16",
+                "name": "itemId",
+                "type": "uint16"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint80",
+                "name": "price",
+                "type": "uint80"
+            }
+        ],
+        "name": "SellOrderFulfilled",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "seller",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint16",
+                "name": "itemId",
+                "type": "uint16"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint80",
+                "name": "price",
+                "type": "uint80"
+            }
+        ],
+        "name": "SellOrderPlaced",
+        "type": "event"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256[]",
+                "name": "sellOrderIds_",
+                "type": "uint256[]"
+            },
+            {
+                "internalType": "uint256[]",
+                "name": "buyOrderIds_",
+                "type": "uint256[]"
+            }
+        ],
+        "name": "cancelOrders",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256[]",
+                "name": "sellOrderIds_",
+                "type": "uint256[]"
+            },
+            {
+                "internalType": "uint256[]",
+                "name": "buyOrderIds_",
+                "type": "uint256[]"
+            }
+        ],
+        "name": "fulfilOrders",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "getBuyOrders",
+        "outputs": [
+            {
+                "components": [
+                    {
+                        "internalType": "address",
+                        "name": "buyer",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint16",
+                        "name": "itemId",
+                        "type": "uint16"
+                    },
+                    {
+                        "internalType": "uint80",
+                        "name": "price",
+                        "type": "uint80"
+                    }
+                ],
+                "internalType": "struct IMarketplace.BuyOrder[]",
+                "name": "",
+                "type": "tuple[]"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "getSellOrders",
+        "outputs": [
+            {
+                "components": [
+                    {
+                        "internalType": "address",
+                        "name": "seller",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint16",
+                        "name": "itemId",
+                        "type": "uint16"
+                    },
+                    {
+                        "internalType": "uint80",
+                        "name": "price",
+                        "type": "uint80"
+                    }
+                ],
+                "internalType": "struct IMarketplace.SellOrder[]",
+                "name": "",
+                "type": "tuple[]"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256[]",
+                "name": "sellOrdersIds_",
+                "type": "uint256[]"
+            },
+            {
+                "internalType": "uint80[]",
+                "name": "sellOrderPrices_",
+                "type": "uint80[]"
+            },
+            {
+                "internalType": "uint16[]",
+                "name": "buyOrdersIds_",
+                "type": "uint16[]"
+            },
+            {
+                "internalType": "uint80[]",
+                "name": "buyOrderPrices_",
+                "type": "uint80[]"
+            }
+        ],
+        "name": "placeOrders",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    }
+]

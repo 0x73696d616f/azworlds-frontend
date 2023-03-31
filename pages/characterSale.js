@@ -2,15 +2,16 @@ import { useState, useEffect } from "react";
 import abi from "../contracts/CharacterSale.json";
 import usdcAbi from "../contracts/USDC.json";
 import { ethers } from "ethers";
-
-import Link from "next/link";
-import Metamask from "../component/metamask";
+import Layout from "../component/layout";
+import styles from "../component/auction.module.css";
+import { Input, Grid, Button } from "@nextui-org/react";
 
 const CharacterSale = () => {
-  const [haveMetamask, sethaveMetamask] = useState(true);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [img, setImg] = useState([]);
+  const [charId, setCharId] = useState({});
+  
 
   const upload = async () => {
     let formData = new FormData();
@@ -32,9 +33,11 @@ const CharacterSale = () => {
   } 
 
   const buyCharacter = async () => {
+    if (typeof window === 'undefined') return;
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
-    const characterSaleAddress = "0x7A826212b8AB639bfC02ae3af4d4Eb8EbE1cDc5B";
+    const signerAddress = await signer.getAddress();
+    const characterSaleAddress = "0x65aAc97b628AdA288b8302510A01D703968c4F6E";
     const characterSale = new ethers.Contract(characterSaleAddress, abi, signer);
     const usdcAddress = await characterSale.usdc();
     const usdc = new ethers.Contract(usdcAddress, usdcAbi, signer);
@@ -69,7 +72,7 @@ const CharacterSale = () => {
       },
       primaryType: "ReceiveWithAuthorization",
       message: {
-        from: client.address,
+        from: signerAddress,
         to: characterSaleAddress,
         value: value.toString(),
         validAfter: 0,
@@ -80,7 +83,7 @@ const CharacterSale = () => {
 
     const signature = await window.ethereum.request({
       method: "eth_signTypedData_v4",
-      params: [client.address, JSON.stringify(data)],
+      params: [signerAddress, JSON.stringify(data)],
     });
 
     const v = "0x" + signature.slice(130, 132);
@@ -90,153 +93,43 @@ const CharacterSale = () => {
     const sig = { "v": v, "r": r, "s": s };
     try {
       const res = await upload();
-      const tx = await characterSale.buy(client.address, value, 0, validBefore, nonce, sig, res.url);
+      const tx = await characterSale.buy(signerAddress, value, 0, validBefore, nonce, sig, res.url);
       await tx.wait();
     } catch (error) {
       console.log(error);
     }
   };
 
-  const [client, setclient] = useState({
-    isConnected: false,
-  });
-
-  const checkConnection = async () => {
-    const { ethereum } = window;
-    if (ethereum) {
-      sethaveMetamask(true);
-      const accounts = await ethereum.request({ method: "eth_accounts" });
-      if (accounts.length > 0) {
-        setclient({
-          isConnected: true,
-          address: accounts[0],
-        });
-      } else {
-        setclient({
-          isConnected: false,
-        });
-      }
-    } else {
-      sethaveMetamask(false);
-    }
-  };
-
-  const connectWeb3 = async () => {
-    try {
-      const { ethereum } = window;
-
-      if (!ethereum) {
-        console.log("Metamask not detected");
-        return;
-      }
-
-      const accounts = await ethereum.request({
-        method: "eth_requestAccounts",
-      });
-
-      setclient({
-        isConnected: true,
-        address: accounts[0],
-      });
-    } catch (error) {
-      console.log("Error connecting to metamask", error);
-    }
-  };
-
-  useEffect(() => {
-    checkConnection();
-  }, []);
-
   return (
     <>
-      {/* Navbar */}
-      <nav className="fren-nav d-flex">
-        <div>
-          <h3>MENU_</h3>
-        </div>
-        <div className="d-flex" style={{ marginLeft: "auto" }}>
-          <div>
-            <button className="btn connect-btn" onClick={connectWeb3}>
-              {client.isConnected ? (
-                <>
-                  {client.address.slice(0, 4)}...
-                  {client.address.slice(38, 42)}
-                </>
-              ) : (
-                <>Connect Wallet</>
-              )}
-            </button>
-          </div>
-          <div>
-            <Link href="https://twitter.com/asaolu_elijah">
-              <button className="btn tw-btn">TW</button>
-            </Link>
-          </div>
-        </div>
-      </nav>
-      {/* Navbar end */}
-
-      <section className="container d-flex">
-        <main>
-          <h1 className="main-title">Character Auction🚀</h1>
-
-          {/* ---- */}
-          <p>
-            {!haveMetamask ? (
-              <Metamask />
-            ) : client.isConnected ? (
-              <>
-                <br />
-                <h2>You're connected ✅</h2>
-                <button
-                  onClick={buyCharacter}
-                  type="button"
-                  className="btn sign-btn"
-                >
-                  Buy Character
-                </button>
-              </>
-            ) : (
-              <>
-                <br />
-                <button className="btn connect-btn" onClick={connectWeb3}>
-                  Connect Wallet
-                </button>
-              </>
-            )}
-            <div>
-              <div>
-                <input
-                  className="input1"
-                  type="text"
+    <div className={styles.bgWrap}>
+      <Layout setCharId={setCharId}></Layout>
+      <Grid.Container gap="2" direction='column' style={{display: "flex", justifyContent: "center", alignItems: "center", height: "80%"}}>
+        <Grid>
+                <Input
                   value={name}
                   placeholder="Name of the NFT"
                   onChange={(e) => setName(e.target.value)}
-                ></input>
-              </div>
-              <div >
-                <input
-                  className="input2"
-                  type="text"
+                ></Input>
+                </Grid>
+                <Grid>
+                <Input
                   value={description}
                   placeholder="Description for the NFT"
                   onChange={(e) => setDescription(e.target.value)}
-                ></input>
-              </div>
-              <div>
-                <label className="styles.inputLabel">
-                  <input
-                    className="inputBox"
+                ></Input>
+                </Grid>
+                <Grid>
+                  <Input
                     type="file"
                     onChange={(e) => setImg(e.target.files[0])}
-                  ></input>
-                </label>
-              </div>
-            </div>
-          </p>
-          {/* ---- */}
-        </main>
-      </section>
+                  ></Input>
+                  </Grid>
+                <Grid>
+                <Button color="warning" onClick={buyCharacter}>Buy</Button>
+                </Grid>
+      </Grid.Container>
+      </div>
     </>
   );
 };

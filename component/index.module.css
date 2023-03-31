@@ -1,13 +1,13 @@
 .bgWrap {
-    background-image: url("https://i.ytimg.com/vi/uE5aWKOVJm4/maxresdefault.jpg");
+    background-image: url("https://bafybeihae4govqtkgtidejkn2qd4awlxyuynhh4uiej4qenxv4ipweptpq.ipfs.dweb.link/AZWorlds.png");
     background-repeat: no-repeat;
     background-size: cover;
-    background-position: center center;
     top: 0;
     left: 0;
     height: 100vh;
     width: 100vw;
     position: fixed;
+    background-position: center center;
     overflow: hidden;
     z-index: -1;
   }
