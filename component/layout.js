@@ -1,10 +1,16 @@
 import { useState, useEffect } from "react";
-
+import { Input, Spacer } from "@nextui-org/react";
 import Link from "next/link";
-import Metamask from "../component/metamask";
 
-const Layout = () => {
+export const Layout = (props) => {
   const [haveMetamask, sethaveMetamask] = useState(true);
+  const [charId, setChar] = useState({});
+  const [domLoaded, setDomLoaded] = useState(false);
+
+  const setCharHereAndParent = (charId) => {
+    setChar(charId.target.value);
+    props.setCharId(charId.target.value);
+  };
 
   const [client, setclient] = useState({
     isConnected: false,
@@ -54,6 +60,7 @@ const Layout = () => {
 
   useEffect(() => {
     checkConnection();
+    setDomLoaded(true);
   }, []);
 
   return (
@@ -64,6 +71,9 @@ const Layout = () => {
           <h3>MENU_</h3>
         </div>
         <div className="d-flex" style={{ marginLeft: "auto" }}>
+          <div style={{ marginRight: "20px" }}>
+        {domLoaded && <Input placeholder="Select Char Id" onChange={setCharHereAndParent}/>}
+        </div>
           <div>
             <button className="btn connect-btn" onClick={connectWeb3}>
               {client.isConnected ? (

@@ -7,6 +7,7 @@ function MyApp({ Component, pageProps }) {
     <NextUIProvider>
       <Component {...pageProps} />
     </NextUIProvider>
+    
   );
 }
 
