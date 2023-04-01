@@ -13,6 +13,8 @@ const Marketplace = () => {
     const [selectedBuyOrders, setSelectedBuyOrders] = useState([]);
     const [placeSellOrders, setPlaceSellOrders] = useState([]);
     const [placeBuyOrders, setPlaceBuyOrders] = useState([]);
+    const [sellOrdersMapping, setSellOrdersMapping] = useState({});
+    const [buyOrdersMapping, setBuyOrdersMapping] = useState({});
 
     const marketplaceAddress="0x59d4E5d8935cBD32b4ab663E06EAF18208Ae4BD5";
 
@@ -34,19 +36,14 @@ const Marketplace = () => {
         }
     }
 
-    let sellOrdersMapping = {};
-    let buyOrdersMapping = {};
-
     const fullfillOrders = async () => {
         if (typeof window.ethereum === "undefined") return;
         updateVars();
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
         const marketplace = new ethers.Contract(marketplaceAddress, abi, signer);
-        const selectedSellOrdersFixed = selectedSellOrders.map((key) => sellOrdersMapping[key]);
-        const selectedBuyOrdersFixed = selectedBuyOrders.map((key) => buyOrdersMapping[key]);
-        console.log(selectedSellOrders);
-        console.log(selectedSellOrdersFixed);
+        const selectedSellOrdersFixed = selectedSellOrders.map((key) => sellOrdersMapping[key*1]);
+        const selectedBuyOrdersFixed = selectedBuyOrders.map((key) => buyOrdersMapping[key*1]);
         const tx = await marketplace.fulfilOrders(selectedSellOrdersFixed, selectedBuyOrdersFixed);
         await tx.wait();
     }
@@ -81,8 +78,9 @@ const Marketplace = () => {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
         const marketplace = new ethers.Contract(marketplaceAddress, abi, signer);
-        console.log(selectedSellOrders, selectedBuyOrders);
-        const tx = await marketplace.cancelOrders(selectedSellOrders, selectedBuyOrders);
+        const selectedSellOrdersFixed = selectedSellOrders.map((key) => sellOrdersMapping[key*1]);
+        const selectedBuyOrdersFixed = selectedBuyOrders.map((key) => buyOrdersMapping[key*1]);
+        const tx = await marketplace.cancelOrders(selectedSellOrdersFixed, selectedBuyOrdersFixed);
         await tx.wait();
     }
 
@@ -97,25 +95,28 @@ const Marketplace = () => {
         const currBuyOrders = await marketplace.getBuyOrders();
         let fixedSellOrders = [];
         let fixedBuyOrders = [];
+        let currSellOrdersMapping = {};
+        let currBuyOrdersMapping = {};
         for (let i = 0; i < currSellOrders.length; i++) {
             if (currSellOrders[i].itemId === 0) continue;
-            sellOrdersMapping[fixedSellOrders.length] = i;
+            currSellOrdersMapping[fixedSellOrders.length] = i;
             fixedSellOrders.push({
                 seller: currSellOrders[i].seller.slice(0, 6) + "..." + currSellOrders[i].seller.slice(-4),
                 itemId: currSellOrders[i].itemId,
                 price: currSellOrders[i].price.toString()
             })
         }
-
+        setSellOrdersMapping(currSellOrdersMapping);
         for (let i = 0; i < currBuyOrders.length; i++) {   
             if (currBuyOrders[i].itemId === 0) continue;
-            buyOrdersMapping[fixedBuyOrders.length] = i;
+            currBuyOrdersMapping[fixedBuyOrders.length] = i;
             fixedBuyOrders.push({
                 buyer: currBuyOrders[i].buyer.slice(0, 6) + "..." + currBuyOrders[i].buyer.slice(-4),
                 itemId: currBuyOrders[i].itemId,
                 price: currBuyOrders[i].price.toString()
             })
         }
+        setBuyOrdersMapping(currBuyOrdersMapping);
 
         setSellOrders(fixedSellOrders);
         setBuyOrders(fixedBuyOrders);
@@ -142,8 +143,7 @@ const Marketplace = () => {
                                 }}
                                 selectionMode="multiple"
                                 onSelectionChange={(selectedRows) => {
-                                    console.log([...selectedRows]);
-                                    //setSelectedSellOrders(selectedRows.keys());
+                                    setSelectedSellOrders([...selectedRows]);
                                 }}
                             >
                                 <Table.Header>
@@ -179,13 +179,13 @@ const Marketplace = () => {
                                 }}
                                 selectionMode="multiple"
                                 onSelectionChange={(selectedRows) => {
-                                    setSelectedBuyOrders(selectedRows.keys());
+                                    setSelectedBuyOrders([...selectedRows]);
                                 }}
                             >
                                 <Table.Header>
                                     <Table.Column>Buyer</Table.Column>
                                     <Table.Column>ItemId</Table.Column>
-                                    <Table.Column>Price USD</Table.Column>
+                                    <Table.Column>Price Gold</Table.Column>
                                 </Table.Header>
                                 <Table.Body>
                                     {buyOrders.map((order, index) => (
@@ -222,7 +222,7 @@ const Marketplace = () => {
                             />
                         </Col>
                     </Row>
-                    <Row>
+                    <Row gap={3}>
                         <Col>
                             <Button auto color="warning" onClick={fullfillOrders}>Fullfill Orders</Button>
                         </Col>

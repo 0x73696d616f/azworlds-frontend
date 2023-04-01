@@ -1,0 +1,546 @@
+[
+    {
+        "inputs": [
+            {
+                "internalType": "contract ICharacter",
+                "name": "character_",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "bank_",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "charId_",
+                "type": "uint256"
+            }
+        ],
+        "name": "AlreadyEnlistedError",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "msgSender_",
+                "type": "address"
+            }
+        ],
+        "name": "NotBankError",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "charId_",
+                "type": "uint256"
+            },
+            {
+                "internalType": "address",
+                "name": "msgSender_",
+                "type": "address"
+            }
+        ],
+        "name": "NotCharOwnerError",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "msgSender_",
+                "type": "address"
+            }
+        ],
+        "name": "NotCharacterError",
+        "type": "error"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "amount_",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "expireTimestamp_",
+                "type": "uint256"
+            }
+        ],
+        "name": "Deposited",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "index",
+                "type": "uint256"
+            }
+        ],
+        "name": "FirstExpiringDepositUpdated",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "amount_",
+                "type": "uint256"
+            }
+        ],
+        "name": "GoldBurned",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "goldPerPower_",
+                "type": "uint256"
+            }
+        ],
+        "name": "GoldPerPowerUpdated",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "charId_",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "goldPerPower_",
+                "type": "uint256"
+            }
+        ],
+        "name": "GoldPerPowerofCharUpdated",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "charId_",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "power_",
+                "type": "uint256"
+            }
+        ],
+        "name": "Joined",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "charId_",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "rewards_",
+                "type": "uint256"
+            }
+        ],
+        "name": "Left",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "charId_",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "powerChange_",
+                "type": "uint256"
+            }
+        ],
+        "name": "PowerIncreased",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "charId_",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "rewards_",
+                "type": "uint256"
+            }
+        ],
+        "name": "RewardsClaimed",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "totalDeposited_",
+                "type": "uint256"
+            }
+        ],
+        "name": "TotalDepositedUpdated",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "totalPower_",
+                "type": "uint256"
+            }
+        ],
+        "name": "TotalPowerUpdated",
+        "type": "event"
+    },
+    {
+        "inputs": [],
+        "name": "PRECISION",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "_bank",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "_char",
+        "outputs": [
+            {
+                "internalType": "contract ICharacter",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "name": "_deposits",
+        "outputs": [
+            {
+                "internalType": "uint192",
+                "name": "amount",
+                "type": "uint192"
+            },
+            {
+                "internalType": "uint64",
+                "name": "expireTimestamp",
+                "type": "uint64"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "_firstExpiringDeposit",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "_goldPerPower",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "name": "_goldPerPowerByCharId",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "_lastUpdate",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "_totalDeposited",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "_totalPower",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "amount_",
+                "type": "uint256"
+            }
+        ],
+        "name": "deposit",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "charId_",
+                "type": "uint256"
+            }
+        ],
+        "name": "getRewards",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "rewards_",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "charId_",
+                "type": "uint256"
+            },
+            {
+                "internalType": "address",
+                "name": "owner_",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "oldPower_",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "powerIncrease_",
+                "type": "uint256"
+            }
+        ],
+        "name": "increasePower",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "charId_",
+                "type": "uint256"
+            }
+        ],
+        "name": "isCharEnlisted",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "charId_",
+                "type": "uint256"
+            }
+        ],
+        "name": "join",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "charId_",
+                "type": "uint256"
+            }
+        ],
+        "name": "leave",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "charId_",
+                "type": "uint256"
+            },
+            {
+                "internalType": "address",
+                "name": "owner_",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "charPower_",
+                "type": "uint256"
+            }
+        ],
+        "name": "leave",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "charId_",
+                "type": "uint256"
+            }
+        ],
+        "name": "previewRewards",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
+]
