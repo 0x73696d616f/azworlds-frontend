@@ -23,7 +23,9 @@ const Boss = () => {
   }
 
   const updateVars = async () => {
-      if (typeof window.ethereum === "undefined") return;
+      if (typeof window === undefined) return;
+      const accounts = await ethereum.request({ method: "eth_accounts" });
+      if (accounts.length <= 0) return;
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
       const bossAddress = "0x884Fc9CFab2A0BBE0aD647B75249609B72Ad20B9";
@@ -55,6 +57,7 @@ const Boss = () => {
         setSelectedRoundSeed("");
         return boss;
       }
+
       const [currAttackedSelectedRound, currClaimed] = await boss.charInfo(selectedRoundId, charId);
       const currSelectedRoundSeed = await boss.roundSeed(selectedRoundId);
       setAttackedSelectedRound(currAttackedSelectedRound);
@@ -69,6 +72,7 @@ const Boss = () => {
   }
 
   const attackBoss = async () => {
+    if (typeof window === "undefined") return;
     if (!charId || typeof charId !== "string") return;
     const boss = await updateVars();
     if (attacked) return;
@@ -77,6 +81,7 @@ const Boss = () => {
   };
 
   const claimRewards = async () => {
+    if (typeof window === "undefined") return;
     const boss = await updateVars();
     if (claimed || !attackedSelectedRound || !selectedRoundSeed) return;
     const tx = await boss.claimRewards(charId, selectedRoundId, {gasLimit: 1000000});
@@ -84,6 +89,7 @@ const Boss = () => {
   };
 
   const nextRound = async () => {
+    if (typeof window === "undefined") return;
     const boss = await updateVars();
     if (roundDuration + lastRound - time > 0) return;
     const tx = await boss.nextRound({gasLimit: 1000000});

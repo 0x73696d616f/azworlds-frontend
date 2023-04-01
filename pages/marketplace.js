@@ -43,9 +43,11 @@ const Marketplace = () => {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
         const marketplace = new ethers.Contract(marketplaceAddress, abi, signer);
+        const selectedSellOrdersFixed = selectedSellOrders.map((key) => sellOrdersMapping[key]);
+        const selectedBuyOrdersFixed = selectedBuyOrders.map((key) => buyOrdersMapping[key]);
         console.log(selectedSellOrders);
-        console.log(selectedSellOrders.map((key) => {return sellOrdersMapping[key]}))
-        const tx = await marketplace.fulfilOrders(selectedSellOrders.map((key) => {return sellOrdersMapping[key]}), selectedBuyOrders.map((key) => {return buyOrdersMapping[key]}));
+        console.log(selectedSellOrdersFixed);
+        const tx = await marketplace.fulfilOrders(selectedSellOrdersFixed, selectedBuyOrdersFixed);
         await tx.wait();
     }
 
@@ -85,7 +87,9 @@ const Marketplace = () => {
     }
 
     const updateVars = async () => {
-        if (typeof window === "undefined") return;
+        if (typeof window === undefined) return;
+        const accounts = await ethereum.request({ method: "eth_accounts" });
+        if (accounts.length <= 0) return;
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
         const marketplace = new ethers.Contract(marketplaceAddress, abi, signer);
@@ -138,7 +142,8 @@ const Marketplace = () => {
                                 }}
                                 selectionMode="multiple"
                                 onSelectionChange={(selectedRows) => {
-                                    setSelectedSellOrders([...Object(selectedRows).keys()]);
+                                    console.log([...selectedRows]);
+                                    //setSelectedSellOrders(selectedRows.keys());
                                 }}
                             >
                                 <Table.Header>
@@ -147,7 +152,7 @@ const Marketplace = () => {
                                     <Table.Column>Price Gold</Table.Column>
                                 </Table.Header>
                                 <Table.Body>
-                                    {sellOrders.filter((order) => (order.itemId !== 0)).map((order, index) => (
+                                    {sellOrders.map((order, index) => (
                                         <Table.Row key={index}>
                                             <Table.Cell>{order.seller}</Table.Cell>
                                             <Table.Cell>{order.itemId}</Table.Cell>
@@ -174,7 +179,7 @@ const Marketplace = () => {
                                 }}
                                 selectionMode="multiple"
                                 onSelectionChange={(selectedRows) => {
-                                    setSelectedBuyOrders([...Object(selectedRows).keys()]);
+                                    setSelectedBuyOrders(selectedRows.keys());
                                 }}
                             >
                                 <Table.Header>
@@ -183,7 +188,7 @@ const Marketplace = () => {
                                     <Table.Column>Price USD</Table.Column>
                                 </Table.Header>
                                 <Table.Body>
-                                    {buyOrders.filter((order) => (order.itemId !== 0)).map((order, index) => (
+                                    {buyOrders.map((order, index) => (
                                         <Table.Row key={index}>
                                             <Table.Cell>{order.buyer}</Table.Cell>
                                             <Table.Cell>{order.itemId}</Table.Cell>

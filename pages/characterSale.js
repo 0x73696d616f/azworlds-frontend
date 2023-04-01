@@ -11,7 +11,13 @@ const CharacterSale = () => {
   const [description, setDescription] = useState("");
   const [img, setImg] = useState([]);
   const [charId, setCharId] = useState({});
-  
+
+  const readData = (f) =>
+    new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.onloadend = () => resolve(reader.result)
+      reader.readAsDataURL(f)
+    })
 
   const upload = async () => {
     let formData = new FormData();
@@ -21,16 +27,13 @@ const CharacterSale = () => {
     const response = await fetch("/api/store-metadata", {
       method: "POST",
       body: formData,
-      headers: {
-        Accept: 'application/json',
-        },
     });
     if (!response.ok) {
       throw new Error(response.statusText);
     }
 
     return response.json();
-  } 
+  }
 
   const buyCharacter = async () => {
     if (typeof window === 'undefined') return;
@@ -102,33 +105,33 @@ const CharacterSale = () => {
 
   return (
     <>
-    <div className={styles.bgWrap}>
-      <Layout setCharId={setCharId}></Layout>
-      <Grid.Container gap="2" direction='column' style={{display: "flex", justifyContent: "center", alignItems: "center", height: "80%"}}>
-        <Grid>
-                <Input
-                  value={name}
-                  placeholder="Name of the NFT"
-                  onChange={(e) => setName(e.target.value)}
-                ></Input>
-                </Grid>
-                <Grid>
-                <Input
-                  value={description}
-                  placeholder="Description for the NFT"
-                  onChange={(e) => setDescription(e.target.value)}
-                ></Input>
-                </Grid>
-                <Grid>
-                  <Input
-                    type="file"
-                    onChange={(e) => setImg(e.target.files[0])}
-                  ></Input>
-                  </Grid>
-                <Grid>
-                <Button color="warning" onClick={buyCharacter}>Buy</Button>
-                </Grid>
-      </Grid.Container>
+      <div className={styles.bgWrap}>
+        <Layout setCharId={setCharId}></Layout>
+        <Grid.Container gap="2" direction='column' style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80%" }}>
+          <Grid>
+            <Input
+              value={name}
+              placeholder="Name of the NFT"
+              onChange={(e) => setName(e.target.value)}
+            ></Input>
+          </Grid>
+          <Grid>
+            <Input
+              value={description}
+              placeholder="Description for the NFT"
+              onChange={(e) => setDescription(e.target.value)}
+            ></Input>
+          </Grid>
+          <Grid>
+            <Input
+              type="file"
+              onChange={(e) => setImg(e.target.files[0])}
+            ></Input>
+          </Grid>
+          <Grid>
+            <Button color="warning" onClick={buyCharacter}>Buy</Button>
+          </Grid>
+        </Grid.Container>
       </div>
     </>
   );
