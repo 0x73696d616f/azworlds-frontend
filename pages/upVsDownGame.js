@@ -1,6 +1,6 @@
 import Layout from "../component/layout";
 import { Text } from "@nextui-org/react";
-import styles from "../component/index.module.css";
+import styles from "../component/upVsDownGame.module.css";
 import { useState, useEffect } from "react";
 
 const UpVsDownGame = () => {

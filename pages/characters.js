@@ -11,7 +11,7 @@ const Characters = () => {
       .then((res) => res.json())
       .then((characters) => {
         characters = characters.map(character => {
-          character.url = character.url.slice(7, character.url.length- 14);
+          character.url = `https://ipfs.io/ipfs/${character.url?.slice(7, character.url.length)}`;
           character.img = `https://ipfs.io/ipfs/${character.img?.slice(7, character.img.length)}`;
           return {...character};
         });
