@@ -17,6 +17,7 @@ const Boss = () => {
   const [charId, setCharId] = useState({});
   const [selectedRoundId, setSelectedRoundId] = useState(0);
   const [selectedRoundSeed, setSelectedRoundSeed] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   const display = function(seconds) {
     return new Date(seconds * 1000).toISOString().slice(11, 19);
@@ -77,7 +78,10 @@ const Boss = () => {
     const boss = await updateVars();
     if (attacked) return;
     const tx = await boss.attackBoss(charId, {gasLimit: 1000000});
+    setIsLoading(true);
     await tx.wait();
+    await updateVars();
+    setIsLoading(false);
   };
 
   const claimRewards = async () => {
@@ -85,7 +89,14 @@ const Boss = () => {
     const boss = await updateVars();
     if (claimed || !attackedSelectedRound || !selectedRoundSeed) return;
     const tx = await boss.claimRewards(charId, selectedRoundId, {gasLimit: 1000000});
-    await tx.wait();
+    setIsLoading(true);
+    try {
+      await tx.wait();
+      await updateVars();
+    } catch (e) {
+      console.log(e);
+    }
+    setIsLoading(false);
   };
 
   const nextRound = async () => {
@@ -93,12 +104,17 @@ const Boss = () => {
     const boss = await updateVars();
     if (roundDuration + lastRound - time > 0) return;
     const tx = await boss.nextRound({gasLimit: 1000000});
+    setIsLoading(true);
     await tx.wait();
+    await updateVars();
+    setIsLoading(false);
   }
 
   useEffect(() => {
     async function fetchData() {
+      setIsLoading(true);
       await updateVars();
+      setIsLoading(false);
     }
     fetchData();
     setDomLoaded(true);
@@ -111,7 +127,7 @@ const Boss = () => {
   return (
     <>
     <div className={styles.bgWrap}>
-      <Layout setCharId={setCharId}/>
+      <Layout setCharId={setCharId} isLoading={isLoading}/>
       <Grid.Container direction="row" gap={2} justify="center" align="center" style={{position: 'absolute', top:"15vh"}}>
         <Grid>
           {attacked && <Tooltip content={"Already attacked"}>

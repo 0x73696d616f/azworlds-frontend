@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import abi from "../contracts/CharacterSale.json";
 import usdcAbi from "../contracts/USDC.json";
 import { ethers } from "ethers";
@@ -11,13 +11,7 @@ const CharacterSale = () => {
   const [description, setDescription] = useState("");
   const [img, setImg] = useState([]);
   const [charId, setCharId] = useState({});
-
-  const readData = (f) =>
-    new Promise((resolve) => {
-      const reader = new FileReader()
-      reader.onloadend = () => resolve(reader.result)
-      reader.readAsDataURL(f)
-    })
+  const [isLoading, setIsLoading] = useState(false);
 
   const upload = async () => {
     let formData = new FormData();
@@ -96,8 +90,11 @@ const CharacterSale = () => {
     const sig = { "v": v, "r": r, "s": s };
     try {
       const res = await upload();
+      console.log(res);
       const tx = await characterSale.buy(signerAddress, value, 0, validBefore, nonce, sig, res.url);
+      setIsLoading(true);
       await tx.wait();
+      setIsLoading(false);
     } catch (error) {
       console.log(error);
     }
@@ -106,7 +103,7 @@ const CharacterSale = () => {
   return (
     <>
       <div className={styles.bgWrap}>
-        <Layout setCharId={setCharId}></Layout>
+        <Layout setCharId={setCharId} isLoading={isLoading}></Layout>
         <Grid.Container gap="2" direction='column' style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80%" }}>
           <Grid>
             <Input

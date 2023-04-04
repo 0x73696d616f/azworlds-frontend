@@ -13,11 +13,14 @@ const Military = () => {
   const [totalDeposited, setTotalDeposited] = useState(0);
   const [rewardsPerYearPerPower, setRewardsPerYearPerPower] = useState(0);
   const [firstExpire, setFirstExpire] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
   const militaryAddress = "0x84370e6Cd9247D8bCF7Ef81E0De3C6629b887E79";
 
   const updateCharId = async (e) => {
+    setIsLoading(true);
     setCharId(""+e);
-    updateVars();
+    await updateVars();
+    setIsLoading(false);
   };
 
   function toDateTime(secs) {
@@ -34,35 +37,46 @@ const Military = () => {
     const military = new ethers.Contract(militaryAddress, abi, signer);
     if (isEnlisted) return;
     const tx = await military.join(charId);
+    setIsLoading(true);
     await tx.wait();
+    await updateVars();
+    setIsLoading(false);
   }
   
   const leaveArmy = async () => {
     if (typeof window.ethereum === "undefined") return;
     if (typeof charId !== "string") return;
-    updateVars();
+    await updateVars();
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
     const military = new ethers.Contract(militaryAddress, abi, signer);
     if (!isEnlisted) return;
     const tx = await military["leave(uint256)"](charId);
+    setIsLoading(true);
     await tx.wait();
+    await updateVars();
+    setIsLoading(false);
   }
 
   const claimRewards = async () => {
     if (typeof window.ethereum === "undefined") return;
     if (typeof charId !== "string") return;
-    updateVars();
+    await updateVars();
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
     const military = new ethers.Contract(militaryAddress, abi, signer);
     if (rewards === 0) return;
     const tx = await military.getRewards(charId);
+    setIsLoading(true);
     await tx.wait();
+    await updateVars();
+    setIsLoading(false);
   }
 
   const previewRewards = async () => {
-    updateVars();
+    setIsLoading(true);
+    await updateVars();
+    setIsLoading(false);
   }
 
   const updateVars = async () => {
@@ -89,13 +103,15 @@ const Military = () => {
   }
 
   useEffect(() => {
+    setIsLoading(true);
     updateVars();
+    setIsLoading(false);
   });
 
   return (
     <>
     <div className={styles.bgWrap}>
-      <Layout setCharId={updateCharId}></Layout>
+      <Layout setCharId={updateCharId} isLoading={isLoading}></Layout>
       <Grid.Container gap={2} direction="column">
         <Col >
         <Row gap={7}>

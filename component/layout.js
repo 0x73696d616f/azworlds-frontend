@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Button, Dropdown, Input, Link } from "@nextui-org/react";
+import { Button, Dropdown, Input, Link, Loading } from "@nextui-org/react";
 import NextLink from "next/link";
 
 export const Layout = (props) => {
@@ -84,6 +84,7 @@ export const Layout = (props) => {
         <div style={{ marginLeft: "1vw" }}>
             {domLoaded && <Input placeholder="Select Char Id" auto onChange={setCharHereAndParent} />}
           </div>
+        {props.isLoading &&  <Loading color="warning" style={{ position: "fixed", left: "50%"}}></Loading>}
         <div className="d-flex" auto style={{ marginLeft: "auto" }}>
           <div>
             <Button color="warning" auto style={{marginRight:"1vw"}}> Documentation </Button>

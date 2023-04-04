@@ -15,6 +15,7 @@ const Marketplace = () => {
     const [placeBuyOrders, setPlaceBuyOrders] = useState([]);
     const [sellOrdersMapping, setSellOrdersMapping] = useState({});
     const [buyOrdersMapping, setBuyOrdersMapping] = useState({});
+    const [isLoading, setIsLoading] = useState(false);
 
     const marketplaceAddress="0x59d4E5d8935cBD32b4ab663E06EAF18208Ae4BD5";
 
@@ -38,19 +39,22 @@ const Marketplace = () => {
 
     const fullfillOrders = async () => {
         if (typeof window.ethereum === "undefined") return;
-        updateVars();
+        await updateVars();
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
         const marketplace = new ethers.Contract(marketplaceAddress, abi, signer);
         const selectedSellOrdersFixed = selectedSellOrders.map((key) => sellOrdersMapping[key*1]);
         const selectedBuyOrdersFixed = selectedBuyOrders.map((key) => buyOrdersMapping[key*1]);
         const tx = await marketplace.fulfilOrders(selectedSellOrdersFixed, selectedBuyOrdersFixed);
+        setIsLoading(true);
         await tx.wait();
+        await updateVars();
+        setIsLoading(false);
     }
 
     const placeMarketplaceOrders = async () => {
         if (typeof window === "undefined") return;
-        updateVars();
+        await updateVars();
         let placeSellOrdersIds = [];
         let placeBuyOrdersIds = [];
         let placeSellOrdersPrices = [];
@@ -69,19 +73,25 @@ const Marketplace = () => {
         const marketplace = new ethers.Contract(marketplaceAddress, abi, signer);
 
         const tx = await marketplace.placeOrders(placeSellOrdersIds, placeSellOrdersPrices, placeBuyOrdersIds, placeBuyOrdersPrices);
+        setIsLoading(true);    
         await tx.wait();
+        await updateVars();
+        setIsLoading(false);
     }
 
     const cancelOrders = async () => {
         if (typeof window === "undefined") return;
-        updateVars();
+        await updateVars();
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
         const marketplace = new ethers.Contract(marketplaceAddress, abi, signer);
         const selectedSellOrdersFixed = selectedSellOrders.map((key) => sellOrdersMapping[key*1]);
         const selectedBuyOrdersFixed = selectedBuyOrders.map((key) => buyOrdersMapping[key*1]);
         const tx = await marketplace.cancelOrders(selectedSellOrdersFixed, selectedBuyOrdersFixed);
+        setIsLoading(true);
         await tx.wait();
+        await updateVars();
+        setIsLoading(false);
     }
 
     const updateVars = async () => {
@@ -124,13 +134,15 @@ const Marketplace = () => {
     }
 
     useEffect(() => {
+        setIsLoading(true);
         updateVars();
+        setIsLoading(false);
     }, [])
 
     return (
         <>
             <div className={styles.bgWrap}>
-                <Layout setCharId={setCharId}></Layout>
+                <Layout setCharId={setCharId} isLoading={isLoading}></Layout>
                 <Grid.Container justifyContent="center" alignItems="center">
                     <Row>
                         <Col>
@@ -143,7 +155,8 @@ const Marketplace = () => {
                                 }}
                                 selectionMode="multiple"
                                 onSelectionChange={(selectedRows) => {
-                                    setSelectedSellOrders([...selectedRows]);
+                                    if (selectedRows === 'all') setSelectedSellOrders([...Array(sellOrders.length).keys()]);
+                                    else setSelectedSellOrders([...selectedRows]);
                                 }}
                             >
                                 <Table.Header>
@@ -179,7 +192,8 @@ const Marketplace = () => {
                                 }}
                                 selectionMode="multiple"
                                 onSelectionChange={(selectedRows) => {
-                                    setSelectedBuyOrders([...selectedRows]);
+                                    if (selectedRows === 'all') setSelectedBuyOrders([...Array(buyOrders.length).keys()]);
+                                    else setSelectedBuyOrders([...selectedRows]);
                                 }}
                             >
                                 <Table.Header>

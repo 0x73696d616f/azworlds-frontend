@@ -6,7 +6,9 @@ import styles from "../component/characters.module.css";
 const Characters = () => {
   const [characters, setCharacters] = useState([]);
   const [charId, setCharId] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
+    setIsLoading(true);
     fetch('/api/characters-storage')
       .then((res) => res.json())
       .then((characters) => {
@@ -16,14 +18,15 @@ const Characters = () => {
           return {...character};
         });
         setCharacters(characters)
-      })
+      }).then(() => setIsLoading(false));
+    
     
   }, [])
 
   return (
     <>
       <div className={styles.bgWrap}>
-      <Layout setCharId={setCharId}/>
+      <Layout setCharId={setCharId} isLoading={isLoading}/>
       <CharacterList characters={characters} />
       </div>
     </>
