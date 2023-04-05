@@ -1,20 +1,26 @@
 import { useState, useEffect } from "react";
-import { Button, Dropdown, Input, Link, Loading } from "@nextui-org/react";
+import { Button, Dropdown, Input, Link, Loading, Popover, Text } from "@nextui-org/react";
 import NextLink from "next/link";
+import UserCharacters from "./user-characters";
+import CharCard from './charCard';
+import ChainInventory from "./chain-inventory";
 
 export const Layout = (props) => {
   const [haveMetamask, sethaveMetamask] = useState(true);
-  const [charId, setChar] = useState({});
+  const [characters, setCharacters] = useState([]);
   const [domLoaded, setDomLoaded] = useState(false);
-
-  const setCharHereAndParent = (charId) => {
-    setChar(charId.target.value);
-    props.setCharId(charId.target.value);
-  };
-
+  const [isLoading, setIsLoading] = useState(false);
   const [client, setclient] = useState({
     isConnected: false,
   });
+  const [charId, setCharId] = useState("");
+  const [addressInfo, setAddressInfo] = useState([{chain: "", itemIds: {}, gold: ""}]);
+
+  const setCharIdHereAndParent = (charId) => {
+    setCharId(charId);
+    props.setCharId(charId);
+  }
+    
 
   const checkConnection = async () => {
     const { ethereum } = window;
@@ -58,17 +64,47 @@ export const Layout = (props) => {
     }
   };
 
+  const loadData = async () => {
+    const { ethereum } = window;
+    if (!ethereum) return;
+    sethaveMetamask(true);
+    const accounts = await ethereum.request({ method: "eth_accounts" });
+    if (accounts.length < 0) return;
+    setIsLoading(true);
+    let response = await fetch('/api/user-characters-storage', {
+      method: 'POST',
+      body: accounts[0],
+    })
+    let characters = await response.json();
+    if (characters.length == 0) return;
+    characters = characters.map(character => {
+      character.url = `https://ipfs.io/ipfs/${character.url?.slice(7, character.url.length)}`;
+      character.img = `https://ipfs.io/ipfs/${character.img?.slice(7, character.img.length)}`;
+      return { ...character };
+    });
+    setCharacters(characters);
+    response = await fetch('/api/address-info', {
+      method: 'POST',
+      body: accounts[0],
+    })
+    let addressInfo = await response.json();
+    setIsLoading(false);
+    setAddressInfo(addressInfo);
+    console.log(addressInfo);
+  }
+
   useEffect(() => {
-    checkConnection();
     setDomLoaded(true);
-  }, []);
+    loadData();
+    checkConnection();
+  }, [])
 
   return (
     <>
       {/* Navbar */}
       <nav className="fren-nav d-flex">
         <div>
-        {domLoaded && < Dropdown>
+          {domLoaded && < Dropdown>
             <Dropdown.Button color="warning" auto>Menu</Dropdown.Button>
             <Dropdown.Menu color="warning" aria-label="Static Actions">
               <Dropdown.Item key="home"><NextLink href="/">Home</NextLink></Dropdown.Item>
@@ -82,12 +118,36 @@ export const Layout = (props) => {
           </Dropdown>}
         </div>
         <div style={{ marginLeft: "1vw" }}>
-            {domLoaded && <Input placeholder="Select Char Id" auto onChange={setCharHereAndParent} />}
-          </div>
-        {props.isLoading &&  <Loading color="warning" style={{ position: "fixed", left: "50%"}}></Loading>}
+          <UserCharacters data={{ characters: characters, setCharId: setCharIdHereAndParent }}></UserCharacters>
+        </div>
+        <div style={{ marginLeft: "1vw"}}>
+          <Popover>
+            <Popover.Trigger>
+              <Button auto color="warning" onPress={loadData}>Character Info</Button>
+            </Popover.Trigger>
+            <Popover.Content>
+              <div style={{maxWidth:"20vw", maxHeight:"40vh"}}>
+              <CharCard character={characters[characters.findIndex((character) => character.charId === charId)]}></CharCard>
+              </div>
+            </Popover.Content>
+          </Popover>
+        </div>
+        {props.isLoading && <Loading color="warning" style={{ position: "fixed", left: "50%" }}></Loading>}
         <div className="d-flex" auto style={{ marginLeft: "auto" }}>
+        <div style={{ marginRight: "1vw"}}>
+          <Popover>
+            <Popover.Trigger>
+              <Button auto color="warning" onPress={loadData}>Inventory</Button>
+            </Popover.Trigger>
+            <Popover.Content>
+            <div style={{maxWidth:"40vw", maxHeight:"40vh"}}>
+              <ChainInventory addressInfo={addressInfo}></ChainInventory>
+              </div>
+            </Popover.Content>
+          </Popover>
+        </div>
           <div>
-            <Button color="warning" auto style={{marginRight:"1vw"}}> Documentation </Button>
+            <Button color="warning" auto style={{ marginRight: "1vw" }}> Documentation </Button>
           </div>
           <div>
             <Button color="warning" auto onClick={connectWeb3}>
@@ -100,11 +160,6 @@ export const Layout = (props) => {
                 <>Connect Wallet</>
               )}
             </Button>
-          </div>
-          <div>
-            <Link color="warning" href="https://twitter.com/3xJanx2009">
-              <Button color="warning" auto style={{marginLeft:"1vw"}}>TW</Button>
-            </Link>
           </div>
         </div>
       </nav>

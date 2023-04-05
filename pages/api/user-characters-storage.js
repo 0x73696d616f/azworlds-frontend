@@ -1,4 +1,5 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js';
+const { utils } = require('ethers');
 
 export default async function handler(req, res) {
   const supabaseUrl = 'https://wylvkxjtrqxesqarblyf.supabase.co'
@@ -7,5 +8,6 @@ export default async function handler(req, res) {
   let { data, error } = await supabase
   .from('Character')
   .select('*')
+  .match({"owner": utils.getAddress(req.body)})
   return res.status(200).json(data);
 }
