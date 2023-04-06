@@ -1,6 +1,6 @@
 import Layout from "../component/layout";
 import styles from "../component/boss.module.css"
-import { Button, Grid, Progress, Text, Tooltip, Input } from "@nextui-org/react";
+import { Button, Grid, Progress, Text, Tooltip, Input, Table } from "@nextui-org/react";
 import abi from "../contracts/Boss.json";
 import { useState, useEffect } from "react";
 import { ethers } from "ethers";
@@ -18,12 +18,20 @@ const Boss = () => {
   const [selectedRoundId, setSelectedRoundId] = useState(0);
   const [selectedRoundSeed, setSelectedRoundSeed] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [roundData , setRoundData] = useState([]);
+
+  const setCharIdUpdate = async (charId) => {
+    setCharId(charId);
+    setIsLoading(true);
+    await updateVars(charId);
+    setIsLoading(false);
+  }
 
   const display = function(seconds) {
     return new Date(seconds * 1000).toISOString().slice(11, 19);
   }
 
-  const updateVars = async () => {
+  const updateVars = async (charId) => {
       if (typeof window === undefined) return;
       const accounts = await ethereum.request({ method: "eth_accounts" });
       if (accounts.length <= 0) return;
@@ -49,6 +57,13 @@ const Boss = () => {
         return boss;
       }
 
+      let roundData = [];
+      for(let i = 0; i < currentRoundId; i++) {
+        const roundInfo = await boss.charInfo(i, charId);
+        roundData.push(roundInfo);
+      }
+      setRoundData(roundData);
+
       const currAttacked = await boss.charInfo(currentRoundId.toNumber(), charId);
       setAttacked(currAttacked);
 
@@ -69,30 +84,32 @@ const Boss = () => {
 
   const changeSelectedRoundId = async (e) => {
     setSelectedRoundId(e.target.value);
-    await updateVars();
+    setIsLoading(true);
+    await updateVars(charId);
+    setIsLoading(false);
   }
 
   const attackBoss = async () => {
     if (typeof window === "undefined") return;
     if (!charId || typeof charId !== "string") return;
-    const boss = await updateVars();
+    const boss = await updateVars(charId);
     if (attacked) return;
     const tx = await boss.attackBoss(charId, {gasLimit: 1000000});
     setIsLoading(true);
     await tx.wait();
-    await updateVars();
+    await updateVars(charId);
     setIsLoading(false);
   };
 
   const claimRewards = async () => {
     if (typeof window === "undefined") return;
-    const boss = await updateVars();
+    const boss = await updateVars(charId);
     if (claimed || !attackedSelectedRound || !selectedRoundSeed) return;
     const tx = await boss.claimRewards(charId, selectedRoundId, {gasLimit: 1000000});
     setIsLoading(true);
     try {
       await tx.wait();
-      await updateVars();
+      await updateVars(charId);
     } catch (e) {
       console.log(e);
     }
@@ -101,19 +118,19 @@ const Boss = () => {
 
   const nextRound = async () => {
     if (typeof window === "undefined") return;
-    const boss = await updateVars();
+    const boss = await updateVars(charId);
     if (roundDuration + lastRound - time > 0) return;
     const tx = await boss.nextRound({gasLimit: 1000000});
     setIsLoading(true);
     await tx.wait();
-    await updateVars();
+    await updateVars(charId);
     setIsLoading(false);
   }
 
   useEffect(() => {
     async function fetchData() {
       setIsLoading(true);
-      await updateVars();
+      await updateVars(charId);
       setIsLoading(false);
     }
     fetchData();
@@ -127,7 +144,7 @@ const Boss = () => {
   return (
     <>
     <div className={styles.bgWrap}>
-      <Layout setCharId={setCharId} isLoading={isLoading}/>
+      <Layout setCharId={setCharIdUpdate} isLoading={isLoading}/>
       <Grid.Container direction="row" gap={2} justify="center" align="center" style={{position: 'absolute', top:"15vh"}}>
         <Grid>
           {attacked && <Tooltip content={"Already attacked"}>
@@ -141,24 +158,34 @@ const Boss = () => {
           {!attacked && typeof charId === 'string' && <Button color="warning" onPress={attackBoss}>Attack Boss</Button>}
         </Grid>
         <Grid>
-          {claimed && <Tooltip content={"Already claimed"}>
-            <Button color="warning" onPress={claimRewards}>Claim Rewards</Button>
-          </Tooltip>}
-
-          {!attackedSelectedRound && <Tooltip content={"Haven't attacked in the selected round"}>
-            <Button color="warning" onPress={claimRewards}>Claim Rewards</Button>
-          </Tooltip>}
-
-          {!claimed && attackedSelectedRound && !selectedRoundSeed && <Tooltip content={"Reward not available, wait or go to next round"}>
-            <Button color="warning" onPress={claimRewards}>Claim Rewards</Button>
-          </Tooltip>}
-
-          {!claimed && attackedSelectedRound && selectedRoundSeed && <Button color="warning" onPress={claimRewards}>Claim Rewards</Button>}
-          {domLoaded && <Input type="text" onChange={changeSelectedRoundId} placeholder="Select Round Id To Claim"/>}
+          {<Button color="warning" onPress={claimRewards}>Claim Rewards</Button>}
+          {domLoaded && <Input type="text" onBlur={changeSelectedRoundId} placeholder="Select Round Id To Claim"/>}
         </Grid>
       </Grid.Container>
+      <Table color="warning" style={{width:"30vw", position: 'absolute', bottom: "5vh", right: "2vw"}}>
+        <Table.Header>
+          <Table.Column>Round Id</Table.Column>
+          <Table.Column>Attacked</Table.Column>
+          <Table.Column>Claimed</Table.Column>
+        </Table.Header>
+        <Table.Body>
+          {roundData.map((round, index) => (
+            <Table.Row key={index}>
+              <Table.Cell>{index}</Table.Cell>
+              <Table.Cell>{round.attacked ? "Yes" : "No"}</Table.Cell>
+              <Table.Cell>{round.claimed ? "Yes" : "No"}</Table.Cell>
+            </Table.Row>
+          ))}
+        </Table.Body>
+        <Table.Pagination
+          shadow
+          noMargin
+          align="center"
+          rowsPerPage={6}
+          onPageChange={(page) => console.log({ page })}
+      />
+      </Table>
       <Grid.Container xs={6} sm={3} gap={2} justify="center" align="center" style={{ position: 'absolute', bottom: "5vh", left: '50%', transform: 'translateX(-50%)' }}>
-
       {(roundDuration + lastRound - time < 0) && <Tooltip content={`Current Round Id ${roundId}`}><Button color="warning" onPress={nextRound}>Go to next round</Button></Tooltip>}
       { domLoaded && (roundDuration + lastRound - time > 0) &&<Text color="#ffffff" className={styles.text}>Next round in {display(Math.floor(roundDuration + lastRound - time))}</Text>}
       { domLoaded && (roundDuration + lastRound - time > 0) &&<Progress color="warning" value={100 - 100*(roundDuration + lastRound - time)/roundDuration}/>}

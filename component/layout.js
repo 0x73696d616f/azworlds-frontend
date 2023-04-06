@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button, Dropdown, Input, Link, Loading, Popover, Text } from "@nextui-org/react";
 import NextLink from "next/link";
 import UserCharacters from "./user-characters";
-import CharCard from './charCard';
+import CharCardChain from './charCardChain';
 import ChainInventory from "./chain-inventory";
 
 export const Layout = (props) => {
@@ -90,7 +90,6 @@ export const Layout = (props) => {
     let addressInfo = await response.json();
     setIsLoading(false);
     setAddressInfo(addressInfo);
-    console.log(addressInfo);
   }
 
   useEffect(() => {
@@ -127,7 +126,7 @@ export const Layout = (props) => {
             </Popover.Trigger>
             <Popover.Content>
               <div style={{maxWidth:"20vw", maxHeight:"40vh"}}>
-              <CharCard character={characters[characters.findIndex((character) => character.charId === charId)]}></CharCard>
+              <CharCardChain character={characters[characters.findIndex((character) => character.charId === charId)]}></CharCardChain>
               </div>
             </Popover.Content>
           </Popover>
