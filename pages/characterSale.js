@@ -43,7 +43,7 @@ const CharacterSale = () => {
     const validBefore = Math.floor(Date.now() / 1000) + 3600; // Valid for an hour
     const nonce = ethers.BigNumber.from(ethers.utils.randomBytes(32)).toHexString();
     let value = await characterSale.getPrice();
-    value = value + 10000;
+    value = BigInt(value) + BigInt(10000);
     const data = {
       types: {
         EIP712Domain: [
