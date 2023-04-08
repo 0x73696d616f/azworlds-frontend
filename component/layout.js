@@ -14,11 +14,15 @@ export const Layout = (props) => {
     isConnected: false,
   });
   const [charId, setCharId] = useState("");
-  const [addressInfo, setAddressInfo] = useState([{chain: "", itemIds: {}, gold: ""}]);
+  const [addressInfo, setAddressInfo] = useState({chain: "", itemIds: {}, gold: ""});
 
   const setCharIdHereAndParent = (charId) => {
     setCharId(charId);
-    props.setCharId(charId);
+    try {
+      props.setCharId(charId);
+    } catch (error) {
+      console.log("Error setting charId in parent", error);
+    }
   }
     
 
@@ -65,31 +69,40 @@ export const Layout = (props) => {
   };
 
   const loadData = async () => {
-    const { ethereum } = window;
-    if (!ethereum) return;
-    sethaveMetamask(true);
-    const accounts = await ethereum.request({ method: "eth_accounts" });
-    if (accounts.length < 0) return;
     setIsLoading(true);
-    let response = await fetch('/api/user-characters-storage', {
-      method: 'POST',
-      body: accounts[0],
-    })
-    let characters = await response.json();
-    if (characters.length == 0) return;
-    characters = characters.map(character => {
-      character.url = `https://ipfs.io/ipfs/${character.url?.slice(7, character.url.length)}`;
-      character.img = `https://ipfs.io/ipfs/${character.img?.slice(7, character.img.length)}`;
-      return { ...character };
-    });
-    setCharacters(characters);
-    response = await fetch('/api/address-info', {
-      method: 'POST',
-      body: accounts[0],
-    })
-    let addressInfo = await response.json();
+    try {
+      const { ethereum } = window;
+      if (!ethereum) return;
+      sethaveMetamask(true);
+      const accounts = await ethereum.request({ method: "eth_accounts" });
+      if (accounts.length < 0) return;
+      let response = await fetch('/api/user-characters-storage', {
+        method: 'POST',
+        body: accounts[0],
+      })
+      let characters = await response.json();
+      if (characters.length == 0) return;
+      characters = characters.map(character => {
+        character.url = `https://ipfs.io/ipfs/${character.url?.slice(7, character.url.length)}`;
+        character.img = `https://ipfs.io/ipfs/${character.img?.slice(7, character.img.length)}`;
+        return { ...character };
+      });
+      setCharacters(characters);
+      response = await fetch('/api/address-info', {
+        method: 'POST',
+        body: accounts[0],
+      })
+      let addressInfo = await response.json();
+      const chainId = await ethereum.request({ method: 'eth_chainId' });
+      console.log(chainId);
+      if (chainId === "0xaa36a7") setAddressInfo(addressInfo[0]);
+      else if (chainId === "0x13881") setAddressInfo(addressInfo[1]);
+      else if (chainId === "0xa869") setAddressInfo(addressInfo[2]);
+      else throw("Chain not supported");
+    } catch (error) {
+      console.log(error);
+    }
     setIsLoading(false);
-    setAddressInfo(addressInfo);
   }
 
   useEffect(() => {
@@ -126,12 +139,12 @@ export const Layout = (props) => {
             </Popover.Trigger>
             <Popover.Content>
               <div style={{maxWidth:"20vw", maxHeight:"40vh"}}>
-              <CharCardChain character={characters[characters.findIndex((character) => character.charId === charId)]}></CharCardChain>
+              <CharCardChain data={{setIsLoading: setIsLoading, character : characters[characters.findIndex((character) => character.charId === charId)]}}></CharCardChain>
               </div>
             </Popover.Content>
           </Popover>
         </div>
-        {props.isLoading && <Loading color="warning" style={{ position: "fixed", left: "50%" }}></Loading>}
+        {props.isLoading || isLoading && <Loading color="warning" style={{ position: "fixed", left: "50%" }}></Loading>}
         <div className="d-flex" auto style={{ marginLeft: "auto" }}>
         <div style={{ marginRight: "1vw"}}>
           <Popover>
@@ -139,8 +152,8 @@ export const Layout = (props) => {
               <Button auto color="warning" onPress={loadData}>Inventory</Button>
             </Popover.Trigger>
             <Popover.Content>
-            <div style={{maxWidth:"40vw", maxHeight:"40vh"}}>
-              <ChainInventory addressInfo={addressInfo}></ChainInventory>
+            <div style={{maxWidth:"40vw", maxHeight:"60vh"}}>
+              <ChainInventory data={{setIsLoading: setIsLoading, addressInfo: addressInfo, charId: charId}}></ChainInventory>
               </div>
             </Popover.Content>
           </Popover>

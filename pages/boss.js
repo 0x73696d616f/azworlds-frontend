@@ -32,6 +32,7 @@ const Boss = () => {
   }
 
   const updateVars = async (charId) => {
+    try {
       if (typeof window === undefined) return;
       const accounts = await ethereum.request({ method: "eth_accounts" });
       if (accounts.length <= 0) return;
@@ -80,6 +81,9 @@ const Boss = () => {
       setClaimed(currClaimed);
       setSelectedRoundSeed(currSelectedRoundSeed);
       return boss;
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   const changeSelectedRoundId = async (e) => {

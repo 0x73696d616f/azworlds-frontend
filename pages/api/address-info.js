@@ -11,5 +11,24 @@ export default async function handler(req, res) {
   .match({"address": utils.getAddress(req.body)})
   let addressInfo = [];
   addressInfo.push({chain: "Sepolia", itemIds: JSON.parse(data[0].itemIds), gold: data[0].gold});
+
+  ({ data, error } = await supabase
+  .from('UserInfoChain2')
+  .select('*')
+  .match({"address": utils.getAddress(req.body)}));
+  if (data.length === 0)
+    addressInfo.push({chain: "Mumbai", itemIds: {}, gold: 0});
+  else
+    addressInfo.push({chain: "Mumbai", itemIds: JSON.parse(data[0].itemIds), gold: data[0].gold});
+
+  ({ data, error } = await supabase
+  .from('UserInfoChain3')
+  .select('*')
+  .match({"address": utils.getAddress(req.body)}));
+  if (data.length === 0)
+    addressInfo.push({chain: "Fuji", itemIds: {}, gold: 0});
+  else
+    addressInfo.push({chain: "Fuji", itemIds: JSON.parse(data[0].itemIds), gold: data[0].gold});
+    
   return res.status(200).json(addressInfo);
 }
