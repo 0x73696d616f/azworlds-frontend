@@ -27,14 +27,15 @@ const UpVsDownGame = () => {
       if (accounts.length <= 0) return;
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
-      const upVsDownGameAddress = "0x884Fc9CFab2A0BBE0aD647B75249609B72Ad20B9";
+      const upVsDownGameAddress = process.env.NEXT_PUBLIC_GAME;
       const upVsDownGame = new ethers.Contract(upVsDownGameAddress, abi, signer);
       const roundDuration = await upVsDownGame.GAME_DURATION();
-      setRoundDuration(roundDuration.toNumber());
-      const tx = await upVsDownGame.trigger(0, 100, price);
-      setInitialPrice(price);
+      setRoundDuration(Number(roundDuration));
+      const tx = await upVsDownGame.trigger("0x00", 1000, ethers.utils.parseUnits(price.toString(), "ether"));
+      setInitialPrice(price.toFixed(7));
       await tx.wait();
-      setInitialRoundTime(new Date().getTime() / 1000);
+      const currentTime = new Date().getTime() / 1000;
+      setInitialRoundTime(Math.floor(currentTime));
     } catch(e) {
       console.log(e);
     }
@@ -49,10 +50,11 @@ const UpVsDownGame = () => {
       if (accounts.length <= 0) return;
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
-      const upVsDownGameAddress = "0x884Fc9CFab2A0BBE0aD647B75249609B72Ad20B9";
+      const upVsDownGameAddress = process.env.NEXT_PUBLIC_GAME;
       const upVsDownGame = new ethers.Contract(upVsDownGameAddress, abi, signer);
-      const tx = await upVsDownGame.trigger(0, 1000, price);
+      const tx = await upVsDownGame.trigger("0x00", 1000, ethers.utils.parseUnits(price.toString(), "ether"));
       await tx.wait();
+      setInitialPrice(0);
     } catch(e) {
       console.log(e);
     }
@@ -67,7 +69,7 @@ const UpVsDownGame = () => {
       if (accounts.length <= 0) return;
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
-      const upVsDownGameAddress = "0x884Fc9CFab2A0BBE0aD647B75249609B72Ad20B9";
+      const upVsDownGameAddress = process.env.NEXT_PUBLIC_GAME;
       const upVsDownGame = new ethers.Contract(upVsDownGameAddress, abi, signer);
       const tx = await upVsDownGame.makeTrade({poolId: "0x00", avatarUrl: "url", countryCode: "PT", upOrDown: true, goldBet: bet});
       await tx.wait();
@@ -85,7 +87,7 @@ const UpVsDownGame = () => {
       if (accounts.length <= 0) return;
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
-      const upVsDownGameAddress = "0x884Fc9CFab2A0BBE0aD647B75249609B72Ad20B9";
+      const upVsDownGameAddress = process.env.NEXT_PUBLIC_GAME;
       const upVsDownGame = new ethers.Contract(upVsDownGameAddress, abi, signer);
       const tx = await upVsDownGame.makeTrade({poolId: "0x00", avatarUrl: "url", countryCode: "PT", upOrDown: false, goldBet: bet});
       await tx.wait();
@@ -170,22 +172,30 @@ const UpVsDownGame = () => {
         }
       });
     }
+  }, []);
+
+  useEffect(() => {
     const id = setInterval(async () => {
-      await updatePrice();
-      setTime(Math.floor(initialRoundTime + roundDuration - new Date().getTime() / 1000));
+      try {
+        await updatePrice();
+        setTime(initialRoundTime + roundDuration - Math.floor(new Date().getTime() / 1000));
+      }
+      catch {
+        console.log("error");
+      }
     }, 1000);
     return () => clearInterval(id);
-  }, []);
+  }, [initialRoundTime, roundDuration])
 
   return (
     <>
       <div className={styles.bgWrap} >
-        <Layout props={{setCharId: setCharId, isLoading: isLoading}}></Layout>
+        <Layout setCharId={setCharId} isLoading={isLoading}></Layout>
         <div style={{ width: "55vw", marginLeft: "22.5vw" }}>
           <Grid.Container>
             <Col>
             <Row style={{ marginLeft: "0vw" }}>
-              <Text size={20}>Next Round: {(time + roundDuration) > 0 ? time + roundDuration : 0}</Text>
+              <Text size={20}>Next Round: {time + roundDuration > 0 ? time + roundDuration: 0}</Text>
               <Spacer x={7}></Spacer>
               <Text size={20}>Initial Value: {initialPrice}</Text>
               <Spacer x={4}></Spacer>

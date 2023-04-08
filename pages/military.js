@@ -14,7 +14,7 @@ const Military = () => {
   const [rewardsPerYearPerPower, setRewardsPerYearPerPower] = useState(0);
   const [firstExpire, setFirstExpire] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const militaryAddress = "0x84370e6Cd9247D8bCF7Ef81E0De3C6629b887E79";
+  const militaryAddress = process.env.NEXT_PUBLIC_MILITARY;
 
   const updateCharId = async (e) => {
     setIsLoading(true);
@@ -30,46 +30,58 @@ const Military = () => {
 }
 
   const joinArmy = async () => {
-    if (typeof window.ethereum === "undefined") return;
-    if (typeof charId !== "string") return;
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const signer = provider.getSigner();
-    const military = new ethers.Contract(militaryAddress, abi, signer);
-    if (isEnlisted) return;
-    const tx = await military.join(charId);
-    setIsLoading(true);
-    await tx.wait();
-    await updateVars();
+    try {
+      if (typeof window.ethereum === "undefined") return;
+      if (typeof charId !== "string") return;
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const military = new ethers.Contract(militaryAddress, abi, signer);
+      if (isEnlisted) return;
+      const tx = await military.join(charId);
+      setIsLoading(true);
+      await tx.wait();
+      await updateVars();
+    } catch(e) {
+      console.log(e);
+    }
     setIsLoading(false);
   }
   
   const leaveArmy = async () => {
-    if (typeof window.ethereum === "undefined") return;
-    if (typeof charId !== "string") return;
-    await updateVars();
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const signer = provider.getSigner();
-    const military = new ethers.Contract(militaryAddress, abi, signer);
-    if (!isEnlisted) return;
-    const tx = await military["leave(uint256)"](charId);
-    setIsLoading(true);
-    await tx.wait();
-    await updateVars();
+    try {
+      if (typeof window.ethereum === "undefined") return;
+      if (typeof charId !== "string") return;
+      await updateVars();
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const military = new ethers.Contract(militaryAddress, abi, signer);
+      if (!isEnlisted) return;
+      const tx = await military["leave(uint256)"](charId);
+      setIsLoading(true);
+      await tx.wait();
+      await updateVars();
+    } catch(e) {
+      console.log(e);
+    }
     setIsLoading(false);
   }
 
   const claimRewards = async () => {
-    if (typeof window.ethereum === "undefined") return;
-    if (typeof charId !== "string") return;
-    await updateVars();
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const signer = provider.getSigner();
-    const military = new ethers.Contract(militaryAddress, abi, signer);
-    if (rewards === 0) return;
-    const tx = await military.getRewards(charId);
-    setIsLoading(true);
-    await tx.wait();
-    await updateVars();
+    try {
+      if (typeof window.ethereum === "undefined") return;
+      if (typeof charId !== "string") return;
+      await updateVars();
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const military = new ethers.Contract(militaryAddress, abi, signer);
+      if (rewards === 0) return;
+      const tx = await military.getRewards(charId);
+      setIsLoading(true);
+      await tx.wait();
+      await updateVars();
+    } catch(e) {
+      console.log(e);
+    }
     setIsLoading(false);
   }
 
@@ -80,6 +92,7 @@ const Military = () => {
   }
 
   const updateVars = async () => {
+    try {
     if (typeof window === undefined) return;
     const accounts = await ethereum.request({ method: "eth_accounts" });
     if (accounts.length <= 0) return;
@@ -100,12 +113,13 @@ const Military = () => {
     setIsEnlisted(isEnlisted);
     const currRewards = await military.previewRewards(charId);
     setRewards(currRewards.toString());
+    } catch(e) {
+      console.log(e);
+    }
   }
 
   useEffect(() => {
-    setIsLoading(true);
     updateVars();
-    setIsLoading(false);
   });
 
   return (

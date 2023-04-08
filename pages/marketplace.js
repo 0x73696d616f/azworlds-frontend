@@ -17,7 +17,7 @@ const Marketplace = () => {
     const [buyOrdersMapping, setBuyOrdersMapping] = useState({});
     const [isLoading, setIsLoading] = useState(false);
 
-    const marketplaceAddress="0x59d4E5d8935cBD32b4ab663E06EAF18208Ae4BD5";
+    const marketplaceAddress=process.env.NEXT_PUBLIC_MARKETPLACE;
 
     const parsePlaceSellOrders = (e) => {
         try {
@@ -38,105 +38,122 @@ const Marketplace = () => {
     }
 
     const fullfillOrders = async () => {
-        if (typeof window.ethereum === "undefined") return;
-        await updateVars();
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const signer = provider.getSigner();
-        const marketplace = new ethers.Contract(marketplaceAddress, abi, signer);
-        const selectedSellOrdersFixed = selectedSellOrders.map((key) => sellOrdersMapping[key*1]);
-        const selectedBuyOrdersFixed = selectedBuyOrders.map((key) => buyOrdersMapping[key*1]);
-        const tx = await marketplace.fulfilOrders(selectedSellOrdersFixed, selectedBuyOrdersFixed);
-        setIsLoading(true);
-        await tx.wait();
-        await updateVars();
+        try {
+            if (typeof window.ethereum === "undefined") return;
+            await updateVars();
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = provider.getSigner();
+            const marketplace = new ethers.Contract(marketplaceAddress, abi, signer);
+            const selectedSellOrdersFixed = selectedSellOrders.map((key) => sellOrdersMapping[key*1]);
+            const selectedBuyOrdersFixed = selectedBuyOrders.map((key) => buyOrdersMapping[key*1]);
+            const tx = await marketplace.fulfilOrders(selectedSellOrdersFixed, selectedBuyOrdersFixed);
+            setIsLoading(true);
+            await tx.wait();
+            await updateVars();
+            }
+        catch (e) {
+            console.log(e);
+        }
         setIsLoading(false);
     }
 
     const placeMarketplaceOrders = async () => {
-        if (typeof window === "undefined") return;
-        await updateVars();
-        let placeSellOrdersIds = [];
-        let placeBuyOrdersIds = [];
-        let placeSellOrdersPrices = [];
-        let placeBuyOrdersPrices = [];
-        for(let i = 0; i < placeSellOrders.length; i++) {
-            placeSellOrdersIds.push(placeSellOrders[i].itemId.toString());
-            placeSellOrdersPrices.push(placeSellOrders[i].price.toString());
-        }
-        for(let i = 0; i < placeBuyOrders.length; i++) {
-            placeBuyOrdersIds.push(placeBuyOrders[i].itemId);
-            placeBuyOrdersPrices.push(placeBuyOrders[i].price);
-        }
+        try {
+            if (typeof window === "undefined") return;
+            await updateVars();
+            let placeSellOrdersIds = [];
+            let placeBuyOrdersIds = [];
+            let placeSellOrdersPrices = [];
+            let placeBuyOrdersPrices = [];
+            for(let i = 0; i < placeSellOrders.length; i++) {
+                placeSellOrdersIds.push(placeSellOrders[i].itemId.toString());
+                placeSellOrdersPrices.push(placeSellOrders[i].price.toString());
+            }
+            for(let i = 0; i < placeBuyOrders.length; i++) {
+                placeBuyOrdersIds.push(placeBuyOrders[i].itemId);
+                placeBuyOrdersPrices.push(placeBuyOrders[i].price);
+            }
 
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const signer = provider.getSigner();
-        const marketplace = new ethers.Contract(marketplaceAddress, abi, signer);
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = provider.getSigner();
+            const marketplace = new ethers.Contract(marketplaceAddress, abi, signer);
 
-        const tx = await marketplace.placeOrders(placeSellOrdersIds, placeSellOrdersPrices, placeBuyOrdersIds, placeBuyOrdersPrices);
-        setIsLoading(true);    
-        await tx.wait();
-        await updateVars();
+            const tx = await marketplace.placeOrders(placeSellOrdersIds, placeSellOrdersPrices, placeBuyOrdersIds, placeBuyOrdersPrices);
+            setIsLoading(true);    
+            await tx.wait();
+            await updateVars();
+        }
+        catch (e) {
+            console.log(e);
+        }
         setIsLoading(false);
     }
 
     const cancelOrders = async () => {
-        if (typeof window === "undefined") return;
-        await updateVars();
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const signer = provider.getSigner();
-        const marketplace = new ethers.Contract(marketplaceAddress, abi, signer);
-        const selectedSellOrdersFixed = selectedSellOrders.map((key) => sellOrdersMapping[key*1]);
-        const selectedBuyOrdersFixed = selectedBuyOrders.map((key) => buyOrdersMapping[key*1]);
-        const tx = await marketplace.cancelOrders(selectedSellOrdersFixed, selectedBuyOrdersFixed);
-        setIsLoading(true);
-        await tx.wait();
-        await updateVars();
+        try {
+            if (typeof window === "undefined") return;
+            await updateVars();
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = provider.getSigner();
+            const marketplace = new ethers.Contract(marketplaceAddress, abi, signer);
+            const selectedSellOrdersFixed = selectedSellOrders.map((key) => sellOrdersMapping[key*1]);
+            const selectedBuyOrdersFixed = selectedBuyOrders.map((key) => buyOrdersMapping[key*1]);
+            const tx = await marketplace.cancelOrders(selectedSellOrdersFixed, selectedBuyOrdersFixed);
+            setIsLoading(true);
+            await tx.wait();
+            await updateVars();
+        } catch (e) {
+            console.log(e);
+        }
         setIsLoading(false);
     }
 
     const updateVars = async () => {
-        if (typeof window === undefined) return;
-        const accounts = await ethereum.request({ method: "eth_accounts" });
-        if (accounts.length <= 0) return;
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const signer = provider.getSigner();
-        const marketplace = new ethers.Contract(marketplaceAddress, abi, signer);
-        const currSellOrders = await marketplace.getSellOrders();
-        const currBuyOrders = await marketplace.getBuyOrders();
-        let fixedSellOrders = [];
-        let fixedBuyOrders = [];
-        let currSellOrdersMapping = {};
-        let currBuyOrdersMapping = {};
-        for (let i = 0; i < currSellOrders.length; i++) {
-            if (currSellOrders[i].itemId === 0) continue;
-            currSellOrdersMapping[fixedSellOrders.length] = i;
-            fixedSellOrders.push({
-                seller: currSellOrders[i].seller.slice(0, 6) + "..." + currSellOrders[i].seller.slice(-4),
-                itemId: currSellOrders[i].itemId,
-                price: currSellOrders[i].price.toString()
-            })
-        }
-        setSellOrdersMapping(currSellOrdersMapping);
-        for (let i = 0; i < currBuyOrders.length; i++) {   
-            if (currBuyOrders[i].itemId === 0) continue;
-            currBuyOrdersMapping[fixedBuyOrders.length] = i;
-            fixedBuyOrders.push({
-                buyer: currBuyOrders[i].buyer.slice(0, 6) + "..." + currBuyOrders[i].buyer.slice(-4),
-                itemId: currBuyOrders[i].itemId,
-                price: currBuyOrders[i].price.toString()
-            })
-        }
-        setBuyOrdersMapping(currBuyOrdersMapping);
+        let marketplace;
+        try {
+            if (typeof window === undefined) return;
+            const accounts = await ethereum.request({ method: "eth_accounts" });
+            if (accounts.length <= 0) return;
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = provider.getSigner();
+            marketplace = new ethers.Contract(marketplaceAddress, abi, signer);
+            const currSellOrders = await marketplace.getSellOrders();
+            const currBuyOrders = await marketplace.getBuyOrders();
+            let fixedSellOrders = [];
+            let fixedBuyOrders = [];
+            let currSellOrdersMapping = {};
+            let currBuyOrdersMapping = {};
+            for (let i = 0; i < currSellOrders.length; i++) {
+                if (currSellOrders[i].itemId === 0) continue;
+                currSellOrdersMapping[fixedSellOrders.length] = i;
+                fixedSellOrders.push({
+                    seller: currSellOrders[i].seller.slice(0, 6) + "..." + currSellOrders[i].seller.slice(-4),
+                    itemId: currSellOrders[i].itemId,
+                    price: currSellOrders[i].price.toString()
+                })
+            }
+            setSellOrdersMapping(currSellOrdersMapping);
+            for (let i = 0; i < currBuyOrders.length; i++) {   
+                if (currBuyOrders[i].itemId === 0) continue;
+                currBuyOrdersMapping[fixedBuyOrders.length] = i;
+                fixedBuyOrders.push({
+                    buyer: currBuyOrders[i].buyer.slice(0, 6) + "..." + currBuyOrders[i].buyer.slice(-4),
+                    itemId: currBuyOrders[i].itemId,
+                    price: currBuyOrders[i].price.toString()
+                })
+            }
+            setBuyOrdersMapping(currBuyOrdersMapping);
 
-        setSellOrders(fixedSellOrders);
-        setBuyOrders(fixedBuyOrders);
+            setSellOrders(fixedSellOrders);
+            setBuyOrders(fixedBuyOrders);
+            } catch (e) {
+                console.log(e);
+            }
         return marketplace;
     }
 
     useEffect(() => {
-        setIsLoading(true);
         updateVars();
-        setIsLoading(false);
     }, [])
 
     return (

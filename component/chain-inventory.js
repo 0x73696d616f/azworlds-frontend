@@ -6,12 +6,12 @@ import goldAbi from "../contracts/Gold.json";
 import characterAbi from "../contracts/CharacterSale.json";
 import { ethers } from "ethers";
 
-const ChainInventory = ({ data }) => {
+const ChainInventory = (props) => {
     const [selectedItems, setSelectedItems] = useState([]);
     const [selectedGold, setSelectedGold] = useState(0);
 
     const sendItemsTo = async (index) => {
-        data.setIsLoading(true);
+        props.setIsLoading(true);
         try {
             const { ethereum } = window;
             if (!ethereum) return;
@@ -20,7 +20,7 @@ const ChainInventory = ({ data }) => {
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const signer = provider.getSigner();
             const signerAddress = await signer.getAddress();
-            const itemAddress = "0x7F4fBef63eFc155816522395629cDbB155e4E212";
+            const itemAddress = process.env.NEXT_PUBLIC_ITEM;
             const item = new ethers.Contract(itemAddress, itemsAbi, signer);
             let chainId;
             if (index === "0") chainId = 10161 // Sepolia
@@ -30,7 +30,7 @@ const ChainInventory = ({ data }) => {
             
             let itemIds = [];
             let amounts = [];
-            const itemIdsEntries = Object.entries(data.addressInfo.itemIds);
+            const itemIdsEntries = Object.entries(props.addressInfo.itemIds);
             for (let i = 0; i < selectedItems.length; i++) {
                 itemIds.push(itemIdsEntries[selectedItems[i]][0]);
                 amounts.push(itemIdsEntries[selectedItems[i]][1]);
@@ -42,11 +42,11 @@ const ChainInventory = ({ data }) => {
         catch (err) {
             console.log(err);
         }
-        data.setIsLoading(false);
+        props.setIsLoading(false);
     }
 
     const sendGoldTo = async (index) => {
-        data.setIsLoading(true);
+        props.setIsLoading(true);
         try {
             const { ethereum } = window;
             if (!ethereum) return;
@@ -55,7 +55,7 @@ const ChainInventory = ({ data }) => {
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const signer = provider.getSigner();
             const signerAddress = await signer.getAddress();
-            const goldAddress = "0x4Faf565e395a1C069a8132437D3b70BeF1A0d999";
+            const goldAddress = process.env.NEXT_PUBLIC_GOLD;
             const gold = new ethers.Contract(goldAddress, goldAbi, signer);
             let chainId;
             if (index === "0") chainId = 10161 // Sepolia
@@ -69,11 +69,11 @@ const ChainInventory = ({ data }) => {
         catch (err) {
             console.log(err);
         }
-        data.setIsLoading(false);
+        props.setIsLoading(false);
     }
 
     const equipGold = async () => {
-        data.setIsLoading(true);
+        props.setIsLoading(true);
         try {
             const { ethereum } = window;
             if (!ethereum) return;
@@ -81,19 +81,19 @@ const ChainInventory = ({ data }) => {
             if (accounts.length < 0) return;
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const signer = provider.getSigner();
-            const characterSaleAddress = "0x65aAc97b628AdA288b8302510A01D703968c4F6E";
+            const characterSaleAddress = process.env.NEXT_PUBLIC_CHARACTER;
             const characterSale = new ethers.Contract(characterSaleAddress, characterAbi, signer);
             console.log(selectedGold);
-            const tx = await characterSale.carryGold(data.charId, selectedGold);
+            const tx = await characterSale.carryGold(props.charId, selectedGold);
             await tx.wait();
         } catch(err) {
             console.log(err);
         }
-        data.setIsLoading(false);
+        props.setIsLoading(false);
     }
 
     const equipItems = async () => {
-        data.setIsLoading(true);
+        props.setIsLoading(true);
         try {
             const { ethereum } = window;
             if (!ethereum) return;
@@ -101,34 +101,36 @@ const ChainInventory = ({ data }) => {
             if (accounts.length < 0) return;
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const signer = provider.getSigner();
-            const characterSaleAddress = "0x65aAc97b628AdA288b8302510A01D703968c4F6E";
+            const characterSaleAddress = process.env.NEXT_PUBLIC_CHARACTER;
             const characterSale = new ethers.Contract(characterSaleAddress, characterAbi, signer);            
             let itemIds = [];
-            const itemIdsEntries = Object.entries(data.addressInfo.itemIds);
+            const itemIdsEntries = Object.entries(props.addressInfo.itemIds);
             for (let i = 0; i < selectedItems.length; i++) {
                 itemIds.push(itemIdsEntries[selectedItems[i]][0]);
             }
+            console.log(props.addressInfo.itemIds);
+            console.log("itemIds: " + itemIds);
 
-            const tx = await characterSale.equipItems(data.charId, itemIds);
+            const tx = await characterSale.equipItems(props.charId, itemIds);
             await tx.wait();
         }
         catch (err) {
             console.log(err);
         }
-        data.setIsLoading(false);
+        props.setIsLoading(false);
     }
 
     return (<Card>
         <Card.Body>
-        <Input auto onChange={(e) => setSelectedGold(e.target.value)} label={"Max gold: " + data.addressInfo.gold} initialValue={data.addressInfo.gold}></Input>
+        <Input auto onChange={(e) => setSelectedGold(e.target.value)} label={"Max gold: " + props.addressInfo.gold} initialValue={props.addressInfo.gold}></Input>
         <Spacer y={0.5}/>
         <Grid.Container>
             < Dropdown>
             <Dropdown.Button auto color="warning">Send To Chain</Dropdown.Button>
             <Dropdown.Menu color="warning" aria-label="Static Actions" auto onAction={sendGoldTo}>
-                {data.addressInfo.chain !== "Sepolia" && <Dropdown.Item key={0}>Sepolia</Dropdown.Item>}
-                {data.addressInfo.chain !== "Mumbai" && <Dropdown.Item key={1}>Mumbai</Dropdown.Item>}
-                {data.addressInfo.chain !== "Fuji" && <Dropdown.Item key={2}>Fuji</Dropdown.Item>}
+                {props.addressInfo.chain !== "Sepolia" && <Dropdown.Item key={0}>Sepolia</Dropdown.Item>}
+                {props.addressInfo.chain !== "Mumbai" && <Dropdown.Item key={1}>Mumbai</Dropdown.Item>}
+                {props.addressInfo.chain !== "Fuji" && <Dropdown.Item key={2}>Fuji</Dropdown.Item>}
             </Dropdown.Menu>
             </Dropdown>
             <Spacer x={0.5}></Spacer>
@@ -143,7 +145,7 @@ const ChainInventory = ({ data }) => {
         }}
         selectionMode="multiple"
         onSelectionChange={(selectedRows) => {
-            if (selectedRows === 'all') setSelectedItems([...Array(Object.entries(data.addressInfo.itemIds).filter((itemAmount) => itemAmount[1] !== "0").length).keys()]);
+            if (selectedRows === 'all') setSelectedItems([...Array(Object.entries(props.addressInfo.itemIds).filter((itemAmount) => itemAmount[1] !== "0").length).keys()]);
             else setSelectedItems([...selectedRows]);
         }}
     >
@@ -153,11 +155,11 @@ const ChainInventory = ({ data }) => {
             <Table.Column>Chain</Table.Column>
         </Table.Header>
         <Table.Body>
-            {Object.entries(data.addressInfo.itemIds).filter((itemAmount) => itemAmount[1] !== "0").map((itemAmount, index) => (
+            {Object.entries(props.addressInfo.itemIds).filter((itemAmount) => itemAmount[1] !== "0").map((itemAmount, index) => (
                 <Table.Row key={index}>
                     <Table.Cell>{itemAmount[0]}</Table.Cell>
                     <Table.Cell>{itemAmount[1]}</Table.Cell>
-                    <Table.Cell>{data.addressInfo.chain}</Table.Cell>
+                    <Table.Cell>{props.addressInfo.chain}</Table.Cell>
                 </Table.Row>
             ))}
         </Table.Body>
@@ -174,9 +176,9 @@ const ChainInventory = ({ data }) => {
     < Dropdown>
     <Dropdown.Button auto color="warning">Send To Chain</Dropdown.Button>
     <Dropdown.Menu color="warning" aria-label="Static Actions" auto onAction={sendItemsTo}>
-        {data.addressInfo.chain !== "Sepolia" && <Dropdown.Item key={0}>Sepolia</Dropdown.Item>}
-        {data.addressInfo.chain !== "Mumbai" && <Dropdown.Item key={1}>Mumbai</Dropdown.Item>}
-        {data.addressInfo.chain !== "Fuji" && <Dropdown.Item key={2}>Fuji</Dropdown.Item>}
+        {props.addressInfo.chain !== "Sepolia" && <Dropdown.Item key={0}>Sepolia</Dropdown.Item>}
+        {props.addressInfo.chain !== "Mumbai" && <Dropdown.Item key={1}>Mumbai</Dropdown.Item>}
+        {props.addressInfo.chain !== "Fuji" && <Dropdown.Item key={2}>Fuji</Dropdown.Item>}
     </Dropdown.Menu>
     </Dropdown>
     <Spacer x={0.5}></Spacer>

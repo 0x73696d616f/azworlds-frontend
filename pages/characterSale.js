@@ -34,7 +34,7 @@ const CharacterSale = () => {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
     const signerAddress = await signer.getAddress();
-    const characterSaleAddress = "0x65aAc97b628AdA288b8302510A01D703968c4F6E";
+    const characterSaleAddress = process.env.NEXT_PUBLIC_CHARACTER;
     const characterSale = new ethers.Contract(characterSaleAddress, abi, signer);
     const usdcAddress = await characterSale.usdc();
     const usdc = new ethers.Contract(usdcAddress, usdcAbi, signer);

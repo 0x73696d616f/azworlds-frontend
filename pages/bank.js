@@ -25,7 +25,7 @@ const Bank = () => {
         const accounts = await ethereum.request({ method: "eth_accounts" });
         if (accounts.length <= 0) return;
         const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const goldAddress = "0x4Faf565e395a1C069a8132437D3b70BeF1A0d999";
+        const goldAddress = process.env.NEXT_PUBLIC_GOLD;
         const bank = new ethers.Contract(goldAddress, abi, provider);
         const assets = await bank.convertToAssets(amount);
         setAssets(assets.toString());
@@ -42,7 +42,7 @@ const Bank = () => {
       const accounts = await ethereum.request({ method: "eth_accounts" });
       if (accounts.length <= 0) return;
       const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const goldAddress = "0x4Faf565e395a1C069a8132437D3b70BeF1A0d999";
+      const goldAddress = process.env.NEXT_PUBLIC_GOLD;
       const bank = new ethers.Contract(goldAddress, abi, provider);
       const shares = await bank.convertToShares(amount);
       setShares(shares.toString());
@@ -58,16 +58,16 @@ const Bank = () => {
       const accounts = await ethereum.request({ method: "eth_accounts" });
       if (accounts.length <= 0) return;
       const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const goldAddress = "0x4Faf565e395a1C069a8132437D3b70BeF1A0d999";
+      const goldAddress = process.env.NEXT_PUBLIC_GOLD;
       const bank = new ethers.Contract(goldAddress, abi, provider);
       const USDCDeposited = await bank.totalUsdc();
       const Gold = await bank.totalSupply();
       const rewardsPreviewed = await bank.previewRewards();
       const USDCInvested = await bank.getInvestment();
-      setUSDCDeposited(Number(ethers.utils.formatEther(USDCDeposited)).toFixed(2));
-      setGold(Number(ethers.utils.formatEther(Gold)).toFixed(2));
-      setRewardsPreviewed(Number(ethers.utils.formatEther(rewardsPreviewed)).toFixed(2));
-      setUSDCInvested(Number(ethers.utils.formatEther(USDCInvested)).toFixed(2));
+      setUSDCDeposited(Number(ethers.utils.formatEther(USDCDeposited)).toFixed(18));
+      setGold(Number(ethers.utils.formatEther(Gold)).toFixed(18));
+      setRewardsPreviewed(Number(ethers.utils.formatEther(rewardsPreviewed)).toFixed(18));
+      setUSDCInvested(Number(ethers.utils.formatEther(USDCInvested)).toFixed(18));
     } catch(e) {
       console.log(e);
     }
@@ -82,7 +82,7 @@ const Bank = () => {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
         const signerAddress = await signer.getAddress();
-        const goldAddress = "0x4Faf565e395a1C069a8132437D3b70BeF1A0d999";
+        const goldAddress = process.env.NEXT_PUBLIC_GOLD;
         const bank = new ethers.Contract(goldAddress, abi, signer);
         const usdc = await bank.asset();
         const usdcContract = new ethers.Contract(usdc, USDCabi, signer);
@@ -103,7 +103,7 @@ const Bank = () => {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
         const signerAddress = await signer.getAddress();
-        const goldAddress = "0x4Faf565e395a1C069a8132437D3b70BeF1A0d999";
+        const goldAddress = process.env.NEXT_PUBLIC_GOLD;
         const bank = new ethers.Contract(goldAddress, abi, signer);
         const tx = await bank.deposit(amount, signerAddress);
         await tx.wait();
@@ -123,7 +123,7 @@ const Bank = () => {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
         const signerAddress = await signer.getAddress();
-        const goldAddress = "0x4Faf565e395a1C069a8132437D3b70BeF1A0d999";
+        const goldAddress = process.env.NEXT_PUBLIC_GOLD;
         const bank = new ethers.Contract(goldAddress, abi, signer);
         const tx = await bank.withdraw(amount, signerAddress, signerAddress);
         await tx.wait();
@@ -135,10 +135,12 @@ const Bank = () => {
   }
 
   useEffect(() => {
-    setIsLoading(true);
     updateVars();
-    setIsLoading(false);
-  }, []);
+    const intervalId = setInterval(() => {
+      updateVars();
+    }, 5000);
+    return () => clearInterval(intervalId);
+  }, [rewardsPreviewed]);
 
   return (
     <>

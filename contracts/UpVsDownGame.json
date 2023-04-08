@@ -810,6 +810,11 @@
                 "internalType": "uint32",
                 "name": "batchSize",
                 "type": "uint32"
+            },
+            {
+                "internalType": "uint256",
+                "name": "price",
+                "type": "uint256"
             }
         ],
         "name": "trigger",

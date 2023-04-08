@@ -69,7 +69,6 @@ export const Layout = (props) => {
   };
 
   const loadData = async () => {
-    setIsLoading(true);
     try {
       const { ethereum } = window;
       if (!ethereum) return;
@@ -94,7 +93,6 @@ export const Layout = (props) => {
       })
       let addressInfo = await response.json();
       const chainId = await ethereum.request({ method: 'eth_chainId' });
-      console.log(chainId);
       if (chainId === "0xaa36a7") setAddressInfo(addressInfo[0]);
       else if (chainId === "0x13881") setAddressInfo(addressInfo[1]);
       else if (chainId === "0xa869") setAddressInfo(addressInfo[2]);
@@ -102,14 +100,13 @@ export const Layout = (props) => {
     } catch (error) {
       console.log(error);
     }
-    setIsLoading(false);
   }
 
   useEffect(() => {
     setDomLoaded(true);
     loadData();
     checkConnection();
-  }, [])
+  }, [isLoading])
 
   return (
     <>
@@ -131,7 +128,7 @@ export const Layout = (props) => {
           </Dropdown>}
         </div>
         <div style={{ marginLeft: "1vw" }}>
-          <UserCharacters data={{ characters: characters, setCharId: setCharIdHereAndParent }}></UserCharacters>
+          <UserCharacters characters={characters} setCharId={setCharIdHereAndParent}></UserCharacters>
         </div>
         <div style={{ marginLeft: "1vw"}}>
           <Popover>
@@ -140,12 +137,12 @@ export const Layout = (props) => {
             </Popover.Trigger>
             <Popover.Content>
               <div style={{maxWidth:"20vw", maxHeight:"40vh"}}>
-              <CharCardChain data={{setIsLoading: setIsLoading, character : characters[characters.findIndex((character) => character.charId === charId)]}}></CharCardChain>
+              <CharCardChain setIsLoading={setIsLoading} character={characters[characters.findIndex((character) => character.charId === charId)]}></CharCardChain>
               </div>
             </Popover.Content>
           </Popover>
         </div>
-        {props.isLoading || isLoading && <Loading color="warning" style={{ position: "fixed", left: "50%" }}></Loading>}
+        {(isLoading || props.isLoading) && <Loading color="warning" style={{ position: "fixed", left: "50%" }}></Loading>}
         <div className="d-flex" auto style={{ marginLeft: "auto" }}>
         <div style={{ marginRight: "1vw"}}>
           <Popover>
@@ -154,7 +151,7 @@ export const Layout = (props) => {
             </Popover.Trigger>
             <Popover.Content>
             <div style={{maxWidth:"40vw", maxHeight:"60vh"}}>
-              <ChainInventory data={{setIsLoading: setIsLoading, addressInfo: addressInfo, charId: charId}}></ChainInventory>
+              <ChainInventory setIsLoading={setIsLoading} addressInfo={addressInfo} charId={charId}></ChainInventory>
               </div>
             </Popover.Content>
           </Popover>

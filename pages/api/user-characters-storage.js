@@ -9,5 +9,6 @@ export default async function handler(req, res) {
   .from('Character')
   .select('*')
   .match({"owner": utils.getAddress(req.body)})
+  data = data.sort((a, b) => Number(a.charId) - Number(b.charId));
   return res.status(200).json(data);
 }

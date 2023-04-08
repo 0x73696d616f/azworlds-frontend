@@ -12,18 +12,19 @@ const Boss = () => {
   const [roundId, setRoundId] = useState(0);
   const [time, setTime] = useState(0);
   const [attacked, setAttacked] = useState(false);
-  const [attackedSelectedRound, setAttackedSelectedRound] = useState(0);
-  const [claimed, setClaimed] = useState(false);
   const [charId, setCharId] = useState({});
   const [selectedRoundId, setSelectedRoundId] = useState(0);
-  const [selectedRoundSeed, setSelectedRoundSeed] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [roundData , setRoundData] = useState([]);
 
   const setCharIdUpdate = async (charId) => {
     setCharId(charId);
     setIsLoading(true);
-    await updateVars(charId);
+    try {
+      await updateVars(charId);
+    } catch(e) {
+      console.log(e);
+    }
     setIsLoading(false);
   }
 
@@ -32,29 +33,25 @@ const Boss = () => {
   }
 
   const updateVars = async (charId) => {
+    let boss;
     try {
       if (typeof window === undefined) return;
       const accounts = await ethereum.request({ method: "eth_accounts" });
       if (accounts.length <= 0) return;
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
-      const bossAddress = "0x884Fc9CFab2A0BBE0aD647B75249609B72Ad20B9";
-      const boss = new ethers.Contract(bossAddress, abi, signer);
+      const bossAddress = process.env.NEXT_PUBLIC_BOSS;
+      boss = new ethers.Contract(bossAddress, abi, signer);
       const lastRoundTimestamp = await boss.lastRoundTimestamp();
       const currentRoundId = await boss.roundId();
       const roundDuration = await boss.ROUND_DURATION();
-      const roundSeedCurr = await boss.roundSeed(currentRoundId.toNumber());
 
-      setSelectedRoundSeed(roundSeedCurr.toNumber());
       setRoundDuration(roundDuration.toNumber());
       setLastRound(lastRoundTimestamp.toNumber());
       setRoundId(currentRoundId.toNumber());
 
       if (!charId || typeof charId !== "string") {
         setAttacked(false);
-        setAttackedSelectedRound("");
-        setClaimed(false);
-        setSelectedRoundSeed("");
         return boss;
       }
 
@@ -65,25 +62,12 @@ const Boss = () => {
       }
       setRoundData(roundData);
 
-      const currAttacked = await boss.charInfo(currentRoundId.toNumber(), charId);
-      setAttacked(currAttacked);
-
-      if (!selectedRoundId || typeof selectedRoundId !== "string") {
-        setAttackedSelectedRound(false);
-        setClaimed(false);
-        setSelectedRoundSeed("");
-        return boss;
-      }
-
-      const [currAttackedSelectedRound, currClaimed] = await boss.charInfo(selectedRoundId, charId);
-      const currSelectedRoundSeed = await boss.roundSeed(selectedRoundId);
-      setAttackedSelectedRound(currAttackedSelectedRound);
-      setClaimed(currClaimed);
-      setSelectedRoundSeed(currSelectedRoundSeed);
-      return boss;
+      const currCharInfo = await boss.charInfo(currentRoundId.toNumber(), charId);
+      setAttacked(currCharInfo.attacked);
     } catch (err) {
       console.log(err);
     }
+    return boss;
   }
 
   const changeSelectedRoundId = async (e) => {
@@ -94,24 +78,13 @@ const Boss = () => {
   }
 
   const attackBoss = async () => {
-    if (typeof window === "undefined") return;
-    if (!charId || typeof charId !== "string") return;
-    const boss = await updateVars(charId);
-    if (attacked) return;
-    const tx = await boss.attackBoss(charId, {gasLimit: 1000000});
-    setIsLoading(true);
-    await tx.wait();
-    await updateVars(charId);
-    setIsLoading(false);
-  };
-
-  const claimRewards = async () => {
-    if (typeof window === "undefined") return;
-    const boss = await updateVars(charId);
-    if (claimed || !attackedSelectedRound || !selectedRoundSeed) return;
-    const tx = await boss.claimRewards(charId, selectedRoundId, {gasLimit: 1000000});
-    setIsLoading(true);
     try {
+      if (typeof window === "undefined") return;
+      if (!charId || typeof charId !== "string") return;
+      const boss = await updateVars(charId);
+      if (attacked) return;
+      const tx = await boss.attackBoss(charId);
+      setIsLoading(true);
       await tx.wait();
       await updateVars(charId);
     } catch (e) {
@@ -120,22 +93,40 @@ const Boss = () => {
     setIsLoading(false);
   };
 
+  const claimRewards = async () => {
+    try {
+      if (typeof window === "undefined") return;
+      const boss = await updateVars(charId);
+      const tx = await boss.claimRewards(charId, selectedRoundId);
+      setIsLoading(true);
+      await tx.wait();
+      await updateVars(charId);
+    } catch (e) {
+      console.log(e);
+    }
+    console.log(isLoading);
+    setIsLoading(false);
+    console.log(isLoading);
+  };
+
   const nextRound = async () => {
-    if (typeof window === "undefined") return;
-    const boss = await updateVars(charId);
-    if (roundDuration + lastRound - time > 0) return;
-    const tx = await boss.nextRound({gasLimit: 1000000});
-    setIsLoading(true);
-    await tx.wait();
-    await updateVars(charId);
+    try {
+      if (typeof window === "undefined") return;
+      const boss = await updateVars(charId);
+      if (roundDuration + lastRound - time > 0) return;
+      const tx = await boss.nextRound({gasLimit: 1000000});
+      setIsLoading(true);
+      await tx.wait();
+      await updateVars(charId);
+    } catch (e) {
+      console.log(e);
+    }
     setIsLoading(false);
   }
 
   useEffect(() => {
     async function fetchData() {
-      setIsLoading(true);
       await updateVars(charId);
-      setIsLoading(false);
     }
     fetchData();
     setDomLoaded(true);
@@ -159,6 +150,7 @@ const Boss = () => {
             <Button color="warning" onPress={attackBoss}>Attack Boss</Button>
           </Tooltip>}
 
+        
           {!attacked && typeof charId === 'string' && <Button color="warning" onPress={attackBoss}>Attack Boss</Button>}
         </Grid>
         <Grid>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Dropdown } from "@nextui-org/react";
 
-const UserCharacters = ({ data }) => {
+const UserCharacters = (data) => {
     const [charId, setCharId] = useState("");
 
     const setCharHereAndParent = (charId) => {
@@ -19,6 +19,7 @@ const UserCharacters = ({ data }) => {
       body: accounts[0],
       })
     let characters = await response.json();
+    if (characters.length === 0) return;
     setCharId(characters[0].charId);
     data.setCharId(characters[0].charId);
   }
@@ -27,7 +28,7 @@ const UserCharacters = ({ data }) => {
         loadChars();
     }, [])
 
-  if (data.characters.length === 0) return (<Dropdown><Dropdown.Button aria-label="NoCharactersButton" disabled color="warning" auto>No Characters</Dropdown.Button></Dropdown>);
+  if (data && data.characters.length === 0) return (<Dropdown><Dropdown.Button aria-label="NoCharactersButton" disabled color="warning" auto>No Characters</Dropdown.Button></Dropdown>);
 
   return (
     <Dropdown>
