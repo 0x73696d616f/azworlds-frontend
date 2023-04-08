@@ -125,6 +125,7 @@ export const Layout = (props) => {
               <Dropdown.Item key="boss"><NextLink href="/boss">Fight Boss</NextLink></Dropdown.Item>
               <Dropdown.Item key="marketplace"><NextLink href="/marketplace">Marketplace</NextLink></Dropdown.Item>
               <Dropdown.Item key="military"><NextLink href="/military">Military</NextLink></Dropdown.Item>
+              <Dropdown.Item key="bank"><NextLink href="/bank">Bank</NextLink></Dropdown.Item>
               <Dropdown.Item key="upVsDownGame"><NextLink href="/upVsDownGame">UpVsDownGame</NextLink></Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>}

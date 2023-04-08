@@ -1,0 +1,30 @@
+.bgWrap {
+    background-image: url("https://gh.cdn.sewest.net/assets/ident/news/final-fantasy-vii-remake-zoom-backgrounds/en_GB/ffviir-zoom-seventh-heaven-header.jpg?quality=65");
+    background-repeat: no-repeat;
+    background-size: cover;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    position: fixed;
+    background-position: center center;
+    overflow: hidden;
+    z-index: -1;
+  }
+
+  .text {
+    color: #ffffff;
+    font-size: 2rem;
+  }
+  
+  @media screen and (max-width: 768px) {
+    .text {
+      font-size: 1.5rem;
+    }
+  }
+  
+  @media screen and (max-width: 480px) {
+    .text {
+      font-size: 1rem;
+    }
+  }
