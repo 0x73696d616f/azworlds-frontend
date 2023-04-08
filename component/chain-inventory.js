@@ -25,7 +25,6 @@ const ChainInventory = (props) => {
             let chainId;
             if (index === "0") chainId = 10161 // Sepolia
             else if (index === "1") chainId = 10109  // Mumbai
-            else if (index === "2") chainId = 10106 // Fuji
             else throw("Invalid index");
             
             let itemIds = [];
@@ -60,7 +59,6 @@ const ChainInventory = (props) => {
             let chainId;
             if (index === "0") chainId = 10161 // Sepolia
             else if (index === "1") chainId = 10109  // Mumbai
-            else if (index === "2") chainId = 10106 // Fuji
             else throw("Invalid index");
 
             const tx = await gold.sendFrom(signerAddress, chainId, signerAddress, selectedGold, signerAddress, ethers.constants.AddressZero, "0x", {value: ethers.utils.parseEther("0.1")});
@@ -130,7 +128,6 @@ const ChainInventory = (props) => {
             <Dropdown.Menu color="warning" aria-label="Static Actions" auto onAction={sendGoldTo}>
                 {props.addressInfo.chain !== "Sepolia" && <Dropdown.Item key={0}>Sepolia</Dropdown.Item>}
                 {props.addressInfo.chain !== "Mumbai" && <Dropdown.Item key={1}>Mumbai</Dropdown.Item>}
-                {props.addressInfo.chain !== "Fuji" && <Dropdown.Item key={2}>Fuji</Dropdown.Item>}
             </Dropdown.Menu>
             </Dropdown>
             <Spacer x={0.5}></Spacer>
@@ -178,7 +175,6 @@ const ChainInventory = (props) => {
     <Dropdown.Menu color="warning" aria-label="Static Actions" auto onAction={sendItemsTo}>
         {props.addressInfo.chain !== "Sepolia" && <Dropdown.Item key={0}>Sepolia</Dropdown.Item>}
         {props.addressInfo.chain !== "Mumbai" && <Dropdown.Item key={1}>Mumbai</Dropdown.Item>}
-        {props.addressInfo.chain !== "Fuji" && <Dropdown.Item key={2}>Fuji</Dropdown.Item>}
     </Dropdown.Menu>
     </Dropdown>
     <Spacer x={0.5}></Spacer>

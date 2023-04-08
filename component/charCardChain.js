@@ -22,7 +22,6 @@ const CharCardChain = (data) => {
       let chainId;
       if (index === "0") chainId = 10161 // Sepolia
       else if (index === "1") chainId = 10109  // Mumbai
-      else if (index === "2") chainId = 10106 // Fuji
       else throw("Invalid index");
       const tx = await characterSale.sendFrom(signerAddress, chainId, signerAddress, data.character.charId);
       await tx.wait();
@@ -86,7 +85,6 @@ const CharCardChain = (data) => {
                 <Dropdown.Menu color="warning" aria-label="Static Actions" auto onAction={sendTo}>
                   {data.character.currentChain !== "Sepolia" && <Dropdown.Item key={0}>Sepolia</Dropdown.Item>}
                   {data.character.currentChain !== "Mumbai" && <Dropdown.Item key={1}>Mumbai</Dropdown.Item>}
-                  {data.character.currentChain !== "Fuji" && <Dropdown.Item key={2}>Fuji</Dropdown.Item>}
                 </Dropdown.Menu>
               </Dropdown>
             </Card.Body>
