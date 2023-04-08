@@ -44,6 +44,7 @@ const CharacterSale = () => {
     const nonce = ethers.BigNumber.from(ethers.utils.randomBytes(32)).toHexString();
     let value = await characterSale.getPrice();
     value = BigInt(value) + BigInt(10000);
+    console.log(value);
     const data = {
       types: {
         EIP712Domain: [
