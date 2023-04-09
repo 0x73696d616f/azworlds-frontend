@@ -1381,6 +1381,11 @@
         "internalType": "uint256[]",
         "name": "charIds_",
         "type": "uint256[]"
+      },
+      {
+        "internalType": "bytes",
+        "name": "adapterParams_",
+        "type": "bytes"
       }
     ],
     "name": "sendBatchFrom",
@@ -1409,6 +1414,11 @@
         "internalType": "uint256",
         "name": "charId_",
         "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "adapterParams_",
+        "type": "bytes"
       }
     ],
     "name": "sendFrom",
