@@ -157,7 +157,7 @@ export const Layout = (props) => {
           </Popover>
         </div>
           <div>
-            <Button color="warning" auto style={{ marginRight: "1vw" }}> Documentation </Button>
+            <Button color="warning" auto style={{ marginRight: "1vw" }}> <Link href="https://0x73696d616f.github.io/AZWorlds/"> <Text color="white">Documentation</Text></Link></Button>
           </div>
           <div>
             <Button color="warning" auto onClick={connectWeb3}>
